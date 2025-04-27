@@ -22,8 +22,8 @@ exports.handler = async function(event, context) {
       };
     }
     
-    // Gemini API endpoint
-    const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
+    // Updated Gemini API endpoint with the correct model name
+    const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
     
     const response = await fetch(GEMINI_API_URL, {
       method: 'POST',
