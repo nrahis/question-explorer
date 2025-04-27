@@ -1,6 +1,7 @@
 // netlify/functions/ask.js
 exports.handler = async function(event, context) {
-  // Only allow POST requests
+  console.log('Function called with method:', event.httpMethod);
+  
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
@@ -10,39 +11,56 @@ exports.handler = async function(event, context) {
 
   try {
     const { question, systemPrompt } = JSON.parse(event.body);
+    console.log('Received question:', question);
     
-    // Your DeepSeek API key - you'll set this as an environment variable in Netlify
-    const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
+    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+    if (!GEMINI_API_KEY) {
+      console.error('Gemini API key not found in environment variables');
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: 'API key not configured' })
+      };
+    }
     
-    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+    // Gemini API endpoint
+    const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
+    
+    const response = await fetch(GEMINI_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
       },
       body: JSON.stringify({
-        model: "deepseek-chat",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: question }
-        ],
-        temperature: 0.7,
-        max_tokens: 500
+        contents: [{
+          parts: [{
+            text: `${systemPrompt}\n\nQuestion: ${question}`
+          }]
+        }],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 500,
+        }
       })
     });
 
+    if (!response.ok) {
+      const errorData = await response.text();
+      console.error('Gemini API error:', errorData);
+      throw new Error(`Gemini API error: ${response.status}`);
+    }
+
     const data = await response.json();
-    const answer = data.choices[0].message.content;
+    const answer = data.candidates[0].content.parts[0].text;
     
     return {
       statusCode: 200,
       body: JSON.stringify({ answer })
     };
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Function error:', error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: 'Something went wrong' })
+      body: JSON.stringify({ error: error.message })
     };
   }
 };
