@@ -261,7 +261,7 @@
         // Function to call your backend API
         async function getAnswer(question) {
             // You'll need to replace this with your actual backend endpoint
-            const API_ENDPOINT = '/api/ask'; // Replace with your backend URL
+            const API_ENDPOINT = '/.netlify/functions/ask'; // Replace with your backend URL
             
             try {
                 const response = await fetch(API_ENDPOINT, {
