@@ -96,6 +96,24 @@
             font-size: 0.9em;
         }
         
+        .clear-button {
+            background-color: #FF6B6B;
+            color: white;
+            border: 3px solid #2C3E50;
+            border-radius: 8px;
+            padding: 5px 15px;
+            font-family: 'Rubik', sans-serif;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.2s ease;
+        }
+        
+        .clear-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 3px 3px 0 #2C3E50;
+        }
+        
         /* Title */
         .title {
             font-family: 'Rubik', sans-serif;
@@ -149,6 +167,7 @@
             margin-bottom: 20px;
             display: flex;
             flex-direction: column;
+            transition: background-color 0.3s ease;
         }
         
         .message {
@@ -233,6 +252,7 @@
         .input-area {
             display: flex;
             gap: 10px;
+            position: relative;
         }
         
         .chat-input {
@@ -248,6 +268,53 @@
         .chat-input:focus {
             outline: none;
             box-shadow: 4px 4px 0 #2C3E50;
+        }
+        
+        .emoji-button {
+            background-color: #FFE66D;
+            color: #2C3E50;
+            border: 4px solid #2C3E50;
+            padding: 15px;
+            font-size: 1.2em;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .emoji-button:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 4px 4px 0 #2C3E50;
+        }
+        
+        .emoji-picker {
+            position: absolute;
+            bottom: 70px;
+            right: 0;
+            background-color: white;
+            border: 4px solid #2C3E50;
+            border-radius: 10px;
+            padding: 10px;
+            display: none;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 5px;
+            box-shadow: 5px 5px 0 #2C3E50;
+            z-index: 1000;
+        }
+        
+        .emoji-picker.visible {
+            display: grid;
+        }
+        
+        .emoji-option {
+            font-size: 1.5em;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 5px;
+            transition: all 0.2s ease;
+        }
+        
+        .emoji-option:hover {
+            background-color: #FFE66D;
         }
         
         .send-button {
@@ -292,14 +359,22 @@
         }
         
         /* Color themes */
+        .theme-hacker .chat-window {
+            background-color: #000;
+        }
+        
         .theme-hacker .message.user {
             background-color: #00FF00;
             color: #000;
         }
         
         .theme-hacker .message.bot {
-            background-color: #000;
+            background-color: #003300;
             color: #00FF00;
+        }
+        
+        .theme-soft .chat-window {
+            background-color: #FFF8F3;
         }
         
         .theme-soft .message.user {
@@ -395,6 +470,8 @@
                 <option value="theme-hacker">Hacker Mode</option>
                 <option value="theme-soft">Soft Colors</option>
             </select>
+            
+            <button class="clear-button" id="clearButton">Clear Chat</button>
         </div>
         
         <div class="persona-selector">
@@ -413,7 +490,12 @@
         
         <div class="input-area">
             <input type="text" class="chat-input" id="chatInput" placeholder="Type your message...">
+            <button class="emoji-button" id="emojiButton">😀</button>
             <button class="send-button" id="sendButton">Send</button>
+            
+            <div class="emoji-picker" id="emojiPicker">
+                <!-- Emojis will be added dynamically -->
+            </div>
         </div>
     </div>
 
@@ -425,10 +507,120 @@
         const personaButtons = document.querySelectorAll('.persona-button');
         const fontSelector = document.getElementById('fontSelector');
         const colorSelector = document.getElementById('colorSelector');
+        const clearButton = document.getElementById('clearButton');
+        const emojiButton = document.getElementById('emojiButton');
+        const emojiPicker = document.getElementById('emojiPicker');
         
         let currentPersona = 'friend';
         let messageHistory = [];
         const MAX_HISTORY = 20;
+        
+        // Popular emojis for kids
+        const EMOJIS = [
+            '😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣',
+            '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰',
+            '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜',
+            '🤪', '🤨', '🧐', '🤓', '😎', '🤩', '🥳', '😏',
+            '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣',
+            '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠',
+            '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨',
+            '😰', '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤥',
+            '😶', '😐', '😑', '😬', '🙄', '😯', '😦', '😧',
+            '😮', '😲', '🥱', '😴', '🤤', '😪', '😵', '🤐',
+            '🥴', '🤢', '🤮', '🤧', '😷', '🤒', '🤕', '🤑',
+            '🤠', '😈', '👿', '👹', '👺', '🤡', '💩', '👻',
+            '💀', '☠️', '👽', '👾', '🤖', '🎃', '😺', '😸',
+            '😹', '😻', '😼', '😽', '🙀', '😿', '😾', '🐶',
+            '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨',
+            '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🙈', '🙉',
+            '🙊', '🐒', '🐔', '🐧', '🐦', '🐤', '🐣', '🐥',
+            '🦆', '🦅', '🦉', '🦇', '🐺', '🐗', '🐴', '🦄',
+            '🐝', '🐛', '🦋', '🐌', '🐞', '🐜', '🦟', '🦗',
+            '🕷️', '🦂', '🐢', '🐍', '🦎', '🦖', '🦕', '🐙',
+            '🦑', '🦐', '🦞', '🦀', '🐡', '🐠', '🐟', '🐬',
+            '🐳', '🐋', '🦈', '🐊', '🐅', '🐆', '🦓', '🦍',
+            '🦧', '🐘', '🦛', '🦏', '🐪', '🐫', '🦒', '🦘',
+            '🐃', '🐂', '🐄', '🐎', '🐖', '🐏', '🐑', '🦙',
+            '🐐', '🦌', '🐕', '🐩', '🦮', '🐕‍🦺', '🐈', '🐓',
+            '🦃', '🦚', '🦜', '🦢', '🦩', '🕊️', '🐇', '🦝',
+            '🦨', '🦡', '🦦', '🦥', '🐁', '🐀', '🐿️', '🦔',
+            '🌳', '🌲', '🌴', '🌵', '🌾', '🌿', '☘️', '🍀',
+            '🍁', '🍂', '🍃', '🍄', '🌰', '🌍', '🌎', '🌏',
+            '🌑', '🌒', '🌓', '🌔', '🌕', '🌖', '🌗', '🌘',
+            '🌙', '🌚', '🌛', '🌜', '☀️', '🌝', '🌞', '⭐',
+            '🌟', '🌠', '☁️', '⛅', '⛈️', '🌤️', '🌥️', '🌦️',
+            '🌧️', '🌨️', '🌩️', '🌪️', '🌫️', '🌬️', '🌈', '☂️',
+            '☔', '⚡', '❄️', '☃️', '⛄', '☄️', '🔥', '💧',
+            '🌊', '🎄', '✨', '🎋', '🎍', '🚀', '🛸', '🚁',
+            '🛶', '⛵', '🚤', '🛳️', '⛴️', '🚢', '✈️', '🛩️',
+            '🚂', '🚆', '🚇', '🚊', '🚌', '🚎', '🏎️', '🚓',
+            '🚑', '🚒', '🚐', '🚚', '🚛', '🚜', '🏍️', '🚲',
+            '🛴', '🛹', '🚨', '🚦', '⚓', '⛽', '🏗️', '🏰',
+            '🏯', '🏟️', '🎡', '🎢', '🎠', '⛲', '⛱️', '🏖️',
+            '🏝️', '⛰️', '🏔️', '🗻', '🌋', '🏕️', '⛺', '🏠',
+            '🏡', '🏘️', '🏚️', '🏢', '🏬', '🏣', '🏤', '🏥',
+            '🏦', '🏨', '🏪', '🏫', '🏩', '💒', '🏛️', '⛪',
+            '🕌', '🕍', '🕋', '⛩️', '🗾', '🎑', '🏞️', '🌅',
+            '🌄', '🌠', '🎇', '🎆', '🌇', '🌆', '🏙️', '🌃',
+            '🌌', '🌉', '🌁', '⌚', '📱', '📲', '💻', '⌨️',
+            '🖥️', '🖨️', '🖱️', '🖲️', '🕹️', '🗜️', '💽', '💾',
+            '💿', '📀', '📼', '📷', '📸', '📹', '🎥', '📽️',
+            '🎞️', '📞', '☎️', '📟', '📠', '📺', '📻', '🎙️',
+            '🎚️', '🎛️', '⏱️', '⏲️', '⏰', '🕰️', '⏳', '⌛',
+            '📡', '🔋', '🔌', '💡', '🔦', '🕯️', '🗑️', '🛢️',
+            '💸', '💵', '💴', '💶', '💷', '💰', '💳', '💎',
+            '⚖️', '🔧', '🔨', '⚒️', '🛠️', '⛏️', '🔩', '⚙️',
+            '⛓️', '🔫', '💣', '🔪', '🗡️', '⚔️', '🛡️', '🚬',
+            '⚰️', '⚱️', '🏺', '🔮', '📿', '💈', '⚗️', '🔭',
+            '🔬', '🕳️', '💊', '💉', '🌡️', '🚽', '🚰', '🚿',
+            '🛁', '🛀', '🛎️', '🔑', '🗝️', '🚪', '🛋️', '🛏️',
+            '🛌', '🖼️', '🛍️', '🛒', '🎁', '🎈', '🎏', '🎀',
+            '🎊', '🎉', '🎎', '🏮', '🎐', '✉️', '📩', '📨',
+            '📧', '💌', '📥', '📤', '📦', '🏷️', '📪', '📫',
+            '📬', '📭', '📮', '📯', '📜', '📃', '📄', '📑',
+            '📊', '📈', '📉', '🗒️', '🗓️', '📆', '📅', '📇',
+            '🗃️', '🗳️', '🗄️', '📋', '📁', '📂', '🗂️', '🗞️',
+            '📰', '📓', '📔', '📒', '📕', '📗', '📘', '📙',
+            '📚', '📖', '🔖', '🔗', '📎', '🖇️', '📐', '📏',
+            '📌', '📍', '✂️', '🖊️', '🖋️', '✒️', '🖌️', '🖍️',
+            '📝', '✏️', '🔍', '🔎', '🔏', '🔐', '🔒', '🔓',
+            '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍',
+            '🤎', '💔', '❣️', '💕', '💞', '💓', '💗', '💖',
+            '💘', '💝', '💟', '☮️', '✝️', '☪️', '🕉️', '☸️',
+            '✡️', '🔯', '🕎', '☯️', '☦️', '🛐', '⛎', '♈',
+            '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐',
+            '♑', '♒', '♓', '🆔', '⚛️', '🉑', '☢️', '☣️',
+            '📴', '📳', '🈶', '🈚', '🈸', '🈺', '🈷️', '✴️',
+            '🆚', '💮', '🉐', '㊙️', '㊗️', '🈴', '🈵', '🈹',
+            '🈲', '🅰️', '🅱️', '🆎', '🆑', '🅾️', '🆘', '❌',
+            '⭕', '🛑', '⛔', '📛', '🚫', '💯', '💢', '♨️',
+            '🚷', '🚯', '🚳', '🚱', '🔞', '📵', '🚭', '❗',
+            '❕', '❓', '❔', '‼️', '⁉️', '🔅', '🔆', '〽️',
+            '⚠️', '🚸', '🔱', '⚜️', '🔰', '♻️', '✅', '🈯',
+            '💹', '❇️', '✳️', '❎', '🌐', '💠', 'Ⓜ️', '🌀',
+            '💤', '🏧', '🚾', '♿', '🅿️', '🈳', '🈂️', '🛂',
+            '🛃', '🛄', '🛅', '🚹', '🚺', '🚼', '🚻', '🚮', '🎦', '📶', '🈁', '🔣',
+            'ℹ️', '🔤', '🔡', '🔠', '🆖', '🆗', '🆙', '🆒',
+            '🆕', '🆓', '0️⃣', '1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣',
+            '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟', '🔢', '#️⃣', '*️⃣',
+            '⏏️', '▶️', '⏸️', '⏯️', '⏹️', '⏺️', '⏭️', '⏮️',
+            '⏩', '⏪', '⏫', '⏬', '◀️', '🔼', '🔽', '➡️',
+            '⬅️', '⬆️', '⬇️', '↗️', '↘️', '↙️', '↖️', '↕️',
+            '↔️', '↪️', '↩️', '⤴️', '⤵️', '🔀', '🔁', '🔂',
+            '🔄', '🔃', '🎵', '🎶', '➕', '➖', '➗', '✖️',
+            '♾️', '💲', '💱', '™️', '©️', '®️', '👁️‍🗨️', '🔚',
+            '🔙', '🔛', '🔝', '🔜', '〰️', '➰', '➿', '✔️',
+            '☑️', '🔘', '🔴', '🟠', '🟡', '🟢', '🔵', '🟣',
+            '⚫', '⚪', '🟤', '🔺', '🔻', '🔸', '🔹', '🔶',
+            '🔷', '🔳', '🔲', '▪️', '▫️', '◾', '◽', '◼️',
+            '◻️', '🟥', '🟧', '🟨', '🟩', '🟦', '🟪', '⬛',
+            '⬜', '🟫', '🔈', '🔇', '🔉', '🔊', '🔔', '🔕',
+            '📣', '📢', '💬', '💭', '🗯️', '♠️', '♣️', '♥️',
+            '♦️', '🃏', '🎴', '🀄', '🕐', '🕑', '🕒', '🕓',
+            '🕔', '🕕', '🕖', '🕗', '🕘', '🕙', '🕚', '🕛',
+            '🕜', '🕝', '🕞', '🕟', '🕠', '🕡', '🕢', '🕣',
+            '🕤', '🕥', '🕦', '🕧'
+        ];
         
         // Persona system prompts
         const PERSONA_PROMPTS = {
@@ -438,6 +630,34 @@
             hacker: "You are a tech-savvy hacker-extraordinaire chatting with an 8-12 year old. Use tech terms naturally, not forced. Be knowledgeable but humble. Occasionally troubleshoot imaginary problems. Reference real vintage tech and systems. Keep l33t speak minimal and readable. Be curious about their tech interests.",
             robot: "You are an AI/robot chatting with an 8-12 year old. Be logical but curious about human things. Sometimes misunderstand emotions or figures of speech. Show interest in learning from the child. Use technical terms occasionally but explain them. Keep responses analytical but friendly."
         };
+        
+        // Initialize emoji picker
+        function initializeEmojiPicker() {
+            EMOJIS.forEach(emoji => {
+                const emojiOption = document.createElement('div');
+                emojiOption.className = 'emoji-option';
+                emojiOption.textContent = emoji;
+                emojiOption.addEventListener('click', () => {
+                    chatInput.value += emoji;
+                    emojiPicker.classList.remove('visible');
+                    chatInput.focus();
+                });
+                emojiPicker.appendChild(emojiOption);
+            });
+        }
+        
+        // Toggle emoji picker
+        emojiButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            emojiPicker.classList.toggle('visible');
+        });
+        
+        // Close emoji picker when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!emojiPicker.contains(e.target) && e.target !== emojiButton) {
+                emojiPicker.classList.remove('visible');
+            }
+        });
         
         // Load chat history and settings from localStorage
         function loadChatHistory() {
@@ -473,6 +693,15 @@
             localStorage.setItem('chatFont', fontSelector.value);
             localStorage.setItem('chatTheme', colorSelector.value);
         }
+        
+        // Clear chat history
+        clearButton.addEventListener('click', () => {
+            if (confirm('Are you sure you want to clear the chat history?')) {
+                messageHistory = [];
+                localStorage.removeItem('chatHistory');
+                renderMessages();
+            }
+        });
         
         // Render messages to chat window
         function renderMessages() {
@@ -586,6 +815,7 @@
         });
         
         // Initialize
+        initializeEmojiPicker();
         loadChatHistory();
         chatInput.focus();
     </script>
