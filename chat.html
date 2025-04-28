@@ -819,6 +819,70 @@
             hacker: "You are a tech-savvy hacker-extraordinaire chatting with an 8-12 year old. Use tech terms naturally, not forced. Be knowledgeable but humble. Occasionally troubleshoot imaginary problems. Reference real vintage tech and systems. Keep l33t speak minimal and readable. Be curious about their tech interests.",
             robot: "You are an AI/robot chatting with an 8-12 year old. Be logical but curious about human things. Sometimes misunderstand emotions or figures of speech. Show interest in learning from the child. Use technical terms occasionally but explain them. Keep responses analytical but friendly."
         };
+
+        // Get settings from localStorage
+        function getSettings() {
+            const settings = localStorage.getItem('questionExplorerSettings');
+            if (settings) {
+                return JSON.parse(settings);
+            }
+            // Default settings if none found
+            return {
+                provider: 'gemini',
+                model: 'gemini-2.0-flash',
+                apiKey: '',
+                temperature: 0.8,  // Slightly higher for chat
+                maxTokens: 256,    // Lower for chat responses
+                topP: 0.9,
+                topK: 40,
+                saveHistory: true
+            };
+        }
+
+        // Update/create the provider indicator
+        function updateProviderIndicator() {
+            const settings = getSettings();
+            
+            // Remove existing indicator if it exists
+            const existingIndicator = document.getElementById('providerIndicator');
+            if (existingIndicator) {
+                existingIndicator.remove();
+            }
+            
+            // Create provider indicator
+            const indicator = document.createElement('div');
+            indicator.id = 'providerIndicator';
+            indicator.className = 'provider-indicator';
+            
+            // Add provider logo or name
+            let providerName;
+            switch (settings.provider) {
+                case 'gemini': providerName = 'Gemini'; break;
+                case 'openai': providerName = 'OpenAI'; break;
+                case 'anthropic': providerName = 'Claude'; break;
+                case 'groq': providerName = 'Groq'; break;
+                case 'deepseek': providerName = 'DeepSeek'; break;
+                default: providerName = 'AI';
+            }
+            
+            indicator.textContent = `Powered by: ${providerName}`;
+            indicator.style.cssText = `
+                position: fixed;
+                bottom: 10px;
+                left: 10px;
+                background-color: #4ECDC4;
+                color: #2C3E50;
+                padding: 5px 10px;
+                border-radius: 20px;
+                font-family: 'Nunito', sans-serif;
+                font-size: 0.8em;
+                font-weight: 700;
+                border: 2px solid #2C3E50;
+                z-index: 1000;
+            `;
+            
+            document.body.appendChild(indicator);
+        }
         
         // Initialize emoji picker
         function initializeEmojiPicker() {
@@ -962,56 +1026,102 @@
                 
         // Send message
         async function sendMessage() {
-            const message = chatInput.value.trim();
-            if (!message) return;
+            const message = messageInput.value.trim();
+            if (!message || isSending) return;
             
-            // Add user message to history
-            messageHistory.push({ role: 'user', content: message });
-            if (messageHistory.length > MAX_HISTORY * 2) {
-                messageHistory = messageHistory.slice(-MAX_HISTORY * 2);
-            }
-            
-            renderMessages();
-            chatInput.value = '';
+            isSending = true;
             sendButton.disabled = true;
-            typingIndicator.classList.add('visible');
+            
+            // Add user message to UI
+            addMessageToUI('user', message);
+            messageInput.value = '';
+            
+            // Show typing indicator
+            showTypingIndicator();
             
             try {
+                // Get user settings
+                const settings = getSettings();
+                
+                // Update provider indicator before making the request
+                updateProviderIndicator();
+                
+                // Get response from API
+                const response = await getChatResponse(message, settings);
+                
+                // Remove typing indicator and add assistant message
+                hideTypingIndicator();
+                addMessageToUI('assistant', response);
+                
+                // If history saving is enabled
+                if (settings.saveHistory) {
+                // Save conversation to history
+                saveConversationToHistory();
+                }
+                
+                // Scroll to bottom
+                scrollToBottom();
+            } catch (error) {
+                console.error('Error in sendMessage:', error);
+                hideTypingIndicator();
+                addMessageToUI('system', `Error: ${error.message || 'Something went wrong. Please try again.'}`);
+            } finally {
+                isSending = false;
+                sendButton.disabled = false;
+                messageInput.focus();
+            }
+        }
+
+        async function getChatResponse(message, settings) {
+            // Format conversation messages
+            const messages = [];
+            
+            // Add conversation history
+            document.querySelectorAll('.message').forEach(msg => {
+                const role = msg.classList.contains('user-message') ? 'user' : 'assistant';
+                const content = msg.querySelector('.message-content').textContent;
+                
+                // Skip system messages
+                if (!msg.classList.contains('system-message')) {
+                messages.push({ role, content });
+                }
+            });
+            
+            // Add current message
+            messages.push({ role: 'user', content: message });
+            
+            try {
+                console.log('Using provider:', settings.provider);
+                console.log('Using model:', settings.model);
+                
                 const response = await fetch('/.netlify/functions/chat', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        messages: messageHistory,
-                        persona: currentPersona,
-                        systemPrompt: PERSONA_PROMPTS[currentPersona]
-                    })
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    messages: messages,
+                    systemPrompt: SYSTEM_PROMPT,
+                    provider: settings.provider,
+                    model: settings.model,
+                    apiKey: settings.apiKey,
+                    temperature: settings.temperature,
+                    maxTokens: settings.maxTokens,
+                    topP: settings.topP,
+                    topK: settings.topK
+                })
                 });
                 
                 if (!response.ok) {
-                    throw new Error('Network response was not ok');
+                const errorData = await response.json();
+                throw new Error(errorData.error || `Error: ${response.status}`);
                 }
                 
                 const data = await response.json();
-                
-                // Add bot response to history
-                messageHistory.push({ role: 'bot', content: data.response });
-                saveChatHistory();
-                renderMessages();
-                
+                return data.response;
             } catch (error) {
-                console.error('Error:', error);
-                const errorMessage = document.createElement('div');
-                errorMessage.className = 'message bot';
-                errorMessage.textContent = 'Oops! Something went wrong. Try again?';
-                chatWindow.appendChild(errorMessage);
-            } finally {
-                typingIndicator.classList.remove('visible');
-                sendButton.disabled = false;
-                chatInput.focus();
+                console.error('Chat API Error:', error);
+                throw error;
             }
-        }
+            }
         
         // Event listeners
         sendButton.addEventListener('click', sendMessage);
@@ -1032,12 +1142,25 @@
             navTabs.appendChild(favTab);
         }
 
+        // Update the page's visual state when it becomes visible
+        document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) {
+            // Update provider indicator when returning to the page
+            updateProviderIndicator();
+        }
+        });
+
+        // Call this on page load
+        document.addEventListener('DOMContentLoaded', function() {
+        loadChatHistory();
+        updateProviderIndicator();
+        });
+
         // Initialize favorites functionality
         addFavoritesTab();
         
         // Initialize
         initializeEmojiPicker();
-        loadChatHistory();
         chatInput.focus();
     </script>
 </body>
