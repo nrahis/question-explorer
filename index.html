@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Question Explorer!</title>
+    <title>Question Explorer!</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&family=Fredoka+One&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Poppins:wght@400;700;900&family=Rubik:wght@400;700;900&display=swap');
         
         body {
             margin: 0;
             padding: 20px;
             background-color: #FF6B6B;
-            font-family: 'Comic Neue', cursive;
+            font-family: 'Nunito', sans-serif; /* Changed from Comic Neue */
             color: #2C3E50;
             min-height: 100vh;
             background-image: 
@@ -32,8 +32,9 @@
         }
         
         .title {
-            font-family: 'Fredoka One', cursive;
+            font-family: 'Rubik', sans-serif; /* Changed from Fredoka One */
             font-size: 3em;
+            font-weight: 900;
             color: #2C3E50;
             text-align: center;
             margin-bottom: 30px;
@@ -62,7 +63,7 @@
             border: 4px solid #2C3E50;
             border-radius: 10px;
             background-color: #FFE66D;
-            font-family: 'Comic Neue', cursive;
+            font-family: 'Nunito', sans-serif;
             transition: all 0.3s ease;
         }
         
@@ -78,7 +79,8 @@
             border: 4px solid #2C3E50;
             padding: 15px 30px;
             font-size: 1.5em;
-            font-family: 'Fredoka One', cursive;
+            font-family: 'Rubik', sans-serif;
+            font-weight: 700;
             border-radius: 10px;
             cursor: pointer;
             transition: all 0.2s ease;
@@ -149,6 +151,7 @@
             font-size: 1.2em;
             line-height: 1.6;
             white-space: pre-wrap;
+            font-family: 'Nunito', sans-serif;
         }
         
         .suggestions {
@@ -157,8 +160,9 @@
         }
         
         .suggestions-title {
-            font-family: 'Fredoka One', cursive;
+            font-family: 'Rubik', sans-serif;
             font-size: 1.5em;
+            font-weight: 700;
             color: #2C3E50;
             margin-bottom: 15px;
         }
@@ -170,7 +174,7 @@
             padding: 8px 16px;
             margin: 5px;
             font-size: 1em;
-            font-family: 'Comic Neue', cursive;
+            font-family: 'Nunito', sans-serif;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.2s ease;
@@ -181,6 +185,18 @@
             background-color: #4ECDC4;
             transform: scale(1.05);
         }
+        
+        /* Font showcase for easy switching */
+        /* Uncomment the one you want to use */
+        
+        /* Option 1: Nunito (current) - rounded but more modern */
+        /* body, .question-input, .answer-content, .suggestion-button { font-family: 'Nunito', sans-serif; } */
+        
+        /* Option 2: Poppins - clean and geometric */
+        /* body, .question-input, .answer-content, .suggestion-button { font-family: 'Poppins', sans-serif; } */
+        
+        /* Option 3: Rubik - playful but less rounded */
+        /* body, .question-input, .answer-content, .suggestion-button { font-family: 'Rubik', sans-serif; } */
         
         /* Decorative elements */
         .star {
@@ -245,23 +261,10 @@
         const answerContent = document.getElementById('answerContent');
         const suggestionButtons = document.querySelectorAll('.suggestion-button');
 
-        // This is the system prompt that will make the AI respond in a kid-friendly way
-        const SYSTEM_PROMPT = `You are a friendly explainer for kids aged 8-12. Please:
-1. Use simple language they can understand
-2. Make comparisons to things they know from everyday life
-3. Include fun analogies (like comparing the age of the universe to a human lifespan)
-4. Break down complex ideas into smaller, digestible parts
-5. Be encouraging and spark curiosity
-6. Use examples from their world (school, playground, home)
-7. When dealing with numbers, convert them to relatable scales
-8. Keep answers engaging but not condescending
-9. Add interesting "wow" facts when relevant
-10. Encourage further exploration with follow-up questions`;
+        const SYSTEM_PROMPT = `You are explaining to an 8-12 year old. Use simple language, fun analogies, and relatable examples. Make complex ideas easy to understand. Be encouraging and spark curiosity.`;
 
-        // Function to call your backend API
         async function getAnswer(question) {
-            // You'll need to replace this with your actual backend endpoint
-            const API_ENDPOINT = '/.netlify/functions/ask'; // Replace with your backend URL
+            const API_ENDPOINT = '/.netlify/functions/ask';
             
             try {
                 const response = await fetch(API_ENDPOINT, {
@@ -276,13 +279,15 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error('Network response was not ok');
+                    const errorData = await response.json();
+                    console.error('API Error:', errorData);
+                    throw new Error(errorData.error || `Network response was not ok: ${response.status}`);
                 }
 
                 const data = await response.json();
                 return data.answer;
             } catch (error) {
-                console.error('Error:', error);
+                console.error('Error details:', error);
                 throw error;
             }
         }
@@ -290,17 +295,16 @@
         async function askQuestion() {
             const question = questionInput.value.trim();
             if (!question) return;
-        
-            // Disable button while loading
+
             askButton.disabled = true;
             
             answerBox.classList.add('visible');
             loading.style.display = 'block';
             answerContent.style.display = 'none';
-        
+
             try {
                 const answer = await getAnswer(question);
-                console.log('Received answer:', answer); // Debug log
+                console.log('Received answer:', answer);
                 loading.style.display = 'none';
                 answerContent.style.display = 'block';
                 answerContent.textContent = answer;
@@ -310,7 +314,6 @@
                 answerContent.style.display = 'block';
                 answerContent.innerHTML = '<div class="error-message">Oops! Something went wrong. Let\'s try again!</div>';
             } finally {
-                // Re-enable button
                 askButton.disabled = false;
             }
         }
@@ -329,18 +332,6 @@
                 askQuestion();
             });
         });
-
-        // Example of a mock backend for testing - remove this when you have a real backend
-        // Uncomment this section to test without a backend:
-        /*
-        async function getAnswer(question) {
-            return new Promise((resolve) => {
-                setTimeout(() => {
-                    resolve(`This is a mock answer to: "${question}"\n\nIn a real setup, this would connect to DeepSeek API and provide a kid-friendly explanation with analogies and simple language.`);
-                }, 2000);
-            });
-        }
-        */
     </script>
 </body>
 </html>
