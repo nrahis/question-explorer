@@ -6,6 +6,7 @@
     <title>Question Explorer!</title>
     <!-- Add marked.js for markdown parsing -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Poppins:wght@400;700;900&family=Rubik:wght@400;700;900&display=swap');
         
@@ -169,10 +170,15 @@
         .question-container {
             position: relative;
             margin-bottom: 30px;
+            width: 100%;
+            box-sizing: border-box;
         }
         
         .question-input {
             width: 100%;
+            box-sizing: border-box; 
+            margin: 0 auto; 
+            display: block;
             padding: 15px;
             font-size: 1.3em;
             border: 4px solid #2C3E50;
@@ -725,20 +731,32 @@
         function getSettings() {
             const settings = localStorage.getItem('questionExplorerSettings');
             if (settings) {
-                return JSON.parse(settings);
+                const parsedSettings = JSON.parse(settings);
+                
+                // If we have the new multi-key format, use the appropriate key
+                if (parsedSettings.apiKeys && parsedSettings.provider) {
+                    // Create a copy of the settings
+                    const modifiedSettings = {...parsedSettings};
+                    // Set the apiKey field to the current provider's API key
+                    modifiedSettings.apiKey = parsedSettings.apiKeys[parsedSettings.provider] || '';
+                    return modifiedSettings;
+                }
+                
+                return parsedSettings;
             }
+            
             // Default settings if none found
             return {
                 provider: 'gemini',
                 model: 'gemini-2.0-flash',
                 apiKey: '',
-                temperature: 0.7,
-                maxTokens: 1024,
-                topP: 0.8,
+                temperature: 0.7, // or 0.8 for chat.html
+                maxTokens: 1024,  // or 256 for chat.html
+                topP: 0.8,        // or 0.9 for chat.html
                 topK: 40,
                 saveHistory: true
             };
-            }
+        }
         
         function loadQuestionHistory() {
             const saved = localStorage.getItem('questionHistory');
@@ -1112,6 +1130,16 @@
                 
                 // Update the provider indicator before making the request
                 updateProviderIndicator();
+
+                // Log advanced settings to console
+                console.group('Generation Settings');
+                console.log('%cProvider: %c' + settings.provider, 'font-weight: bold', 'color: blue');
+                console.log('%cModel: %c' + settings.model, 'font-weight: bold', 'color: blue');
+                console.log('%cTemperature: %c' + settings.temperature, 'font-weight: bold', 'color: green');
+                console.log('%cMax Tokens: %c' + settings.maxTokens, 'font-weight: bold', 'color: green');
+                console.log('%cTop P: %c' + settings.topP, 'font-weight: bold', 'color: green');
+                console.log('%cTop K: %c' + settings.topK, 'font-weight: bold', 'color: green');
+                console.groupEnd();
                 
                 const answer = await getAnswer(question, settings);
                 console.log('Received answer:', answer);

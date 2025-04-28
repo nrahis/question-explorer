@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Question Explorer!</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Poppins:wght@400;700;900&family=Rubik:wght@400;700;900&family=Space+Mono:wght@400;700&family=VT323&family=Press+Start+2P&family=Comic+Neue:wght@400;700&family=Fredoka+One&family=Bangers&family=Orbitron:wght@400;700&display=swap');        
         body {
@@ -824,16 +825,28 @@
         function getSettings() {
             const settings = localStorage.getItem('questionExplorerSettings');
             if (settings) {
-                return JSON.parse(settings);
+                const parsedSettings = JSON.parse(settings);
+                
+                // If we have the new multi-key format, use the appropriate key
+                if (parsedSettings.apiKeys && parsedSettings.provider) {
+                    // Create a copy of the settings
+                    const modifiedSettings = {...parsedSettings};
+                    // Set the apiKey field to the current provider's API key
+                    modifiedSettings.apiKey = parsedSettings.apiKeys[parsedSettings.provider] || '';
+                    return modifiedSettings;
+                }
+                
+                return parsedSettings;
             }
+            
             // Default settings if none found
             return {
                 provider: 'gemini',
                 model: 'gemini-2.0-flash',
                 apiKey: '',
-                temperature: 0.8,  // Slightly higher for chat
-                maxTokens: 256,    // Lower for chat responses
-                topP: 0.9,
+                temperature: 0.7, // or 0.8 for chat.html
+                maxTokens: 1024,  // or 256 for chat.html
+                topP: 0.8,        // or 0.9 for chat.html
                 topK: 40,
                 saveHistory: true
             };
@@ -1050,6 +1063,17 @@
                 
                 // Update provider indicator before making the request
                 updateProviderIndicator();
+
+                // Log advanced settings to console
+                console.group('Generation Settings');
+                console.log('%cProvider: %c' + settings.provider, 'font-weight: bold', 'color: blue');
+                console.log('%cModel: %c' + settings.model, 'font-weight: bold', 'color: blue');
+                console.log('%cTemperature: %c' + settings.temperature, 'font-weight: bold', 'color: green');
+                console.log('%cMax Tokens: %c' + settings.maxTokens, 'font-weight: bold', 'color: green');
+                console.log('%cTop P: %c' + settings.topP, 'font-weight: bold', 'color: green');
+                console.log('%cTop K: %c' + settings.topK, 'font-weight: bold', 'color: green');
+                console.log('%cPersona: %c' + currentPersona, 'font-weight: bold', 'color: purple');
+                console.groupEnd();
                 
                 const response = await getChatResponse(message, settings);
                 

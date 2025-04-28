@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Question Explorer! - Settings</title>
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Poppins:wght@400;700;900&family=Rubik:wght@400;700;900&display=swap');
         
@@ -91,7 +92,8 @@
         }
         
         .form-control {
-            width: 100%;
+            width: calc(100% - 24px); /* Subtract the padding */
+            box-sizing: border-box;
             padding: 12px;
             font-size: 1em;
             border: 3px solid var(--dark-blue);
@@ -113,6 +115,7 @@
         
         .form-row .form-group {
             flex: 1;
+            max-width: calc(50% - 8px); /* Half width minus gap space */
         }
         
         .btn {
@@ -322,6 +325,7 @@
         }
         
         .api-key-input {
+            width: calc(100% - 40px); /* Make room for the eye icon */
             font-family: monospace;
             letter-spacing: 1px;
         }
@@ -338,6 +342,7 @@
         
         .api-key-wrapper {
             position: relative;
+            width: 100%;
         }
         
         @media (max-width: 768px) {
@@ -482,11 +487,16 @@
             ]
         };
 
-        // Settings structure
         const defaultSettings = {
             provider: 'gemini',
             model: 'gemini-2.0-flash',
-            apiKey: '',
+            apiKeys: {
+                gemini: '',
+                openai: '',
+                anthropic: '',
+                groq: '',
+                deepseek: ''
+            },
             temperature: 0.7,
             maxTokens: 1024,
             topP: 0.8,
@@ -521,14 +531,36 @@
             
             if (settings) {
                 settings = JSON.parse(settings);
+                
+                // Migration: if old format (single apiKey), convert to new format (multiple apiKeys)
+                if (settings.apiKey && !settings.apiKeys) {
+                    settings.apiKeys = {
+                        gemini: '',
+                        openai: '',
+                        anthropic: '',
+                        groq: '',
+                        deepseek: ''
+                    };
+                    // Store the existing API key with the current provider
+                    settings.apiKeys[settings.provider] = settings.apiKey;
+                    // Remove the old apiKey property
+                    delete settings.apiKey;
+                }
+                
+                // Ensure all providers have an entry in apiKeys object
+                if (!settings.apiKeys) {
+                    settings.apiKeys = defaultSettings.apiKeys;
+                }
             } else {
                 settings = defaultSettings;
-                localStorage.setItem('questionExplorerSettings', JSON.stringify(settings));
             }
+            
+            // Save migrated settings
+            localStorage.setItem('questionExplorerSettings', JSON.stringify(settings));
             
             // Set initial values
             providerSelect.value = settings.provider;
-            apiKeyInput.value = settings.apiKey;
+            apiKeyInput.value = settings.apiKeys[settings.provider] || '';
             temperatureSlider.value = settings.temperature;
             temperatureValue.textContent = settings.temperature;
             maxTokensSlider.value = settings.maxTokens;
@@ -567,16 +599,24 @@
 
         // Save settings to localStorage
         function saveSettings() {
-            const settings = {
-                provider: providerSelect.value,
-                model: modelSelect.value,
-                apiKey: apiKeyInput.value,
-                temperature: parseFloat(temperatureSlider.value),
-                maxTokens: parseInt(maxTokensSlider.value),
-                topP: parseFloat(topPSlider.value),
-                topK: parseInt(topKSlider.value),
-                saveHistory: saveHistoryToggle.checked
-            };
+            const settings = JSON.parse(localStorage.getItem('questionExplorerSettings') || '{}');
+            
+            // Initialize apiKeys object if it doesn't exist
+            if (!settings.apiKeys) {
+                settings.apiKeys = defaultSettings.apiKeys;
+            }
+            
+            // Update the current provider's API key
+            settings.apiKeys[providerSelect.value] = apiKeyInput.value;
+            
+            // Update the rest of the settings
+            settings.provider = providerSelect.value;
+            settings.model = modelSelect.value;
+            settings.temperature = parseFloat(temperatureSlider.value);
+            settings.maxTokens = parseInt(maxTokensSlider.value);
+            settings.topP = parseFloat(topPSlider.value);
+            settings.topK = parseInt(topKSlider.value);
+            settings.saveHistory = saveHistoryToggle.checked;
             
             localStorage.setItem('questionExplorerSettings', JSON.stringify(settings));
             showStatus('Settings saved successfully!', 'success');
@@ -669,6 +709,12 @@
             // Select the first model by default
             if (modelSelect.options.length > 0) {
                 modelSelect.value = modelSelect.options[0].value;
+            }
+            
+            // Load the API key for the selected provider
+            const settings = JSON.parse(localStorage.getItem('questionExplorerSettings'));
+            if (settings && settings.apiKeys) {
+                apiKeyInput.value = settings.apiKeys[providerSelect.value] || '';
             }
         });
 

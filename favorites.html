@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Question Explorer!</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Poppins:wght@400;700;900&family=Rubik:wght@400;700;900&display=swap');
         
@@ -526,11 +527,18 @@
             border: 6px solid #2C3E50;
             border-radius: 20px;
             box-shadow: 10px 10px 0 rgba(0, 0, 0, 0.2);
+            max-width: 600px;
             width: 90%;
+            box-sizing: border-box;
+            overflow: hidden;
             max-width: 600px;
             padding: 20px;
             position: relative;
         }
+
+        .modal {
+ /* Prevent content from overflowing */
+}
         
         .modal-close {
             position: absolute;
@@ -552,7 +560,12 @@
         }
         
         .notes-textarea {
-            width: 100%;
+            width: calc(100% - 30px);
+            box-sizing: border-box; 
+            resize: vertical;
+            max-width: 100%;
+            margin: 0 auto;
+            display: block;
             min-height: 150px;
             border: 3px solid #2C3E50;
             border-radius: 10px;
