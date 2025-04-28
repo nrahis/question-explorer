@@ -290,20 +290,22 @@
         async function askQuestion() {
             const question = questionInput.value.trim();
             if (!question) return;
-
+        
             // Disable button while loading
             askButton.disabled = true;
             
             answerBox.classList.add('visible');
             loading.style.display = 'block';
             answerContent.style.display = 'none';
-
+        
             try {
                 const answer = await getAnswer(question);
+                console.log('Received answer:', answer); // Debug log
                 loading.style.display = 'none';
                 answerContent.style.display = 'block';
                 answerContent.textContent = answer;
             } catch (error) {
+                console.error('Error in askQuestion:', error);
                 loading.style.display = 'none';
                 answerContent.style.display = 'block';
                 answerContent.innerHTML = '<div class="error-message">Oops! Something went wrong. Let\'s try again!</div>';
