@@ -3,9 +3,6 @@
 
 # Virtual Environment
 .venv
-node_modules
-package-lock.json
-package.json
 
 # Environment variables
 .env
