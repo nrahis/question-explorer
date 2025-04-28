@@ -22,7 +22,8 @@ exports.handler = async function(event, context) {
       };
     }
     
-    const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro-exp-03-25:generateContent?key=${GEMINI_API_KEY}`;
+    // Using gemini-2.0-flash - the latest fast model
+    const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
     
     const response = await fetch(GEMINI_API_URL, {
       method: 'POST',
@@ -37,7 +38,7 @@ exports.handler = async function(event, context) {
         }],
         generationConfig: {
           temperature: 0.7,
-          maxOutputTokens: 1024, // Increased from 500
+          maxOutputTokens: 1024,
           topP: 0.8,
           topK: 40
         }
