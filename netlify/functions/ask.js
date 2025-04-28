@@ -22,7 +22,6 @@ exports.handler = async function(event, context) {
       };
     }
     
-    // Updated to use Gemini 2.5 Pro
     const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro-exp-03-25:generateContent?key=${GEMINI_API_KEY}`;
     
     const response = await fetch(GEMINI_API_URL, {
@@ -50,7 +49,16 @@ exports.handler = async function(event, context) {
     }
 
     const data = await response.json();
+    console.log('Full Gemini response:', JSON.stringify(data, null, 2)); // Debug log
+    
+    // Check if we have a valid response structure
+    if (!data.candidates || !data.candidates[0] || !data.candidates[0].content || !data.candidates[0].content.parts || !data.candidates[0].content.parts[0]) {
+      console.error('Unexpected response structure:', data);
+      throw new Error('Invalid response structure from Gemini API');
+    }
+    
     const answer = data.candidates[0].content.parts[0].text;
+    console.log('Extracted answer:', answer); // Debug log
     
     return {
       statusCode: 200,
