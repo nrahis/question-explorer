@@ -1026,18 +1026,23 @@
                 
         // Send message
         async function sendMessage() {
-            const message = messageInput.value.trim();
-            if (!message || isSending) return;
+            const message = chatInput.value.trim();
+            if (!message) return;
             
-            isSending = true;
             sendButton.disabled = true;
             
-            // Add user message to UI
-            addMessageToUI('user', message);
-            messageInput.value = '';
+            // Add user message
+            const userMessageEl = document.createElement('div');
+            userMessageEl.className = 'message user';
+            userMessageEl.textContent = message;
+            chatWindow.appendChild(userMessageEl);
+            
+            // Clear input and scroll to bottom
+            chatInput.value = '';
+            chatWindow.scrollTop = chatWindow.scrollHeight;
             
             // Show typing indicator
-            showTypingIndicator();
+            typingIndicator.classList.add('visible');
             
             try {
                 // Get user settings
@@ -1046,49 +1051,61 @@
                 // Update provider indicator before making the request
                 updateProviderIndicator();
                 
-                // Get response from API
                 const response = await getChatResponse(message, settings);
                 
-                // Remove typing indicator and add assistant message
-                hideTypingIndicator();
-                addMessageToUI('assistant', response);
+                // Hide typing indicator
+                typingIndicator.classList.remove('visible');
                 
-                // If history saving is enabled
+                // Add bot message with markdown parsing
+                const botMessageEl = document.createElement('div');
+                botMessageEl.className = 'message bot';
+                botMessageEl.innerHTML = marked.parse(response);
+                chatWindow.appendChild(botMessageEl);
+                
+                // Scroll to the new message
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+                
+                // Add to message history and save if enabled
                 if (settings.saveHistory) {
-                // Save conversation to history
-                saveConversationToHistory();
+                messageHistory.push({ role: 'user', content: message });
+                messageHistory.push({ role: 'bot', content: response });
+                
+                // Trim history if too long
+                if (messageHistory.length > MAX_HISTORY * 2) {
+                    messageHistory = messageHistory.slice(-MAX_HISTORY * 2);
                 }
                 
-                // Scroll to bottom
-                scrollToBottom();
+                saveChatHistory();
+                }
             } catch (error) {
-                console.error('Error in sendMessage:', error);
-                hideTypingIndicator();
-                addMessageToUI('system', `Error: ${error.message || 'Something went wrong. Please try again.'}`);
+                console.error('Chat error:', error);
+                typingIndicator.classList.remove('visible');
+                
+                // Add error message
+                const errorMessageEl = document.createElement('div');
+                errorMessageEl.className = 'message bot';
+                errorMessageEl.innerHTML = `<span style="color: #FF6B6B;">Error: ${error.message || 'Something went wrong. Please try again.'}</span>`;
+                chatWindow.appendChild(errorMessageEl);
+                chatWindow.scrollTop = chatWindow.scrollHeight;
             } finally {
-                isSending = false;
                 sendButton.disabled = false;
-                messageInput.focus();
             }
         }
 
         async function getChatResponse(message, settings) {
-            // Format conversation messages
-            const messages = [];
+            // Format conversation history for the API
+            const conversationHistory = [];
             
-            // Add conversation history
-            document.querySelectorAll('.message').forEach(msg => {
-                const role = msg.classList.contains('user-message') ? 'user' : 'assistant';
-                const content = msg.querySelector('.message-content').textContent;
-                
-                // Skip system messages
-                if (!msg.classList.contains('system-message')) {
-                messages.push({ role, content });
-                }
-            });
+            for (let i = 0; i < messageHistory.length; i++) {
+                const msg = messageHistory[i];
+                conversationHistory.push({
+                role: msg.role,
+                content: msg.content
+                });
+            }
             
-            // Add current message
-            messages.push({ role: 'user', content: message });
+            // Get the current persona's system prompt
+            const systemPrompt = PERSONA_PROMPTS[currentPersona];
             
             try {
                 console.log('Using provider:', settings.provider);
@@ -1096,10 +1113,13 @@
                 
                 const response = await fetch('/.netlify/functions/chat', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                },
                 body: JSON.stringify({
-                    messages: messages,
-                    systemPrompt: SYSTEM_PROMPT,
+                    messages: conversationHistory,
+                    persona: currentPersona, 
+                    systemPrompt: systemPrompt,
                     provider: settings.provider,
                     model: settings.model,
                     apiKey: settings.apiKey,
@@ -1109,19 +1129,20 @@
                     topK: settings.topK
                 })
                 });
-                
+
                 if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.error || `Error: ${response.status}`);
+                console.error('API Error:', errorData);
+                throw new Error(errorData.error || `API error: ${response.status}`);
                 }
-                
+
                 const data = await response.json();
                 return data.response;
             } catch (error) {
-                console.error('Chat API Error:', error);
+                console.error('Error details:', error);
                 throw error;
             }
-            }
+        }
         
         // Event listeners
         sendButton.addEventListener('click', sendMessage);
@@ -1144,16 +1165,16 @@
 
         // Update the page's visual state when it becomes visible
         document.addEventListener('visibilitychange', function() {
-        if (!document.hidden) {
-            // Update provider indicator when returning to the page
-            updateProviderIndicator();
-        }
+            if (!document.hidden) {
+                // Update provider indicator when returning to the page
+                updateProviderIndicator();
+            }
         });
 
-        // Call this on page load
+        // Initialize the provider indicator on page load
         document.addEventListener('DOMContentLoaded', function() {
-        loadChatHistory();
-        updateProviderIndicator();
+            loadChatHistory();
+            updateProviderIndicator();
         });
 
         // Initialize favorites functionality
