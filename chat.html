@@ -166,29 +166,59 @@
             margin-bottom: 20px;
             display: flex;
             flex-direction: column;
-            transition: background-color 0.3s ease;
+            transition: all 0.3s ease; /* Changed from background-color to all */
         }
         
         .message {
             max-width: 70%;
-            padding: 10px 15px;
-            margin: 8px 0;
+            padding: 12px 18px;
+            margin: 10px 0;
             border: 3px solid #2C3E50;
-            border-radius: 15px;
+            border-radius: 18px;
             position: relative;
             font-size: 1.1em;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
+            box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.1);
+            line-height: 1.4;
         }
         
         .message.user {
             background-color: #4ECDC4;
             align-self: flex-end;
             margin-left: auto;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.user::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            right: 15px;
+            width: 20px;
+            height: 10px;
+            background-color: #4ECDC4;
+            border-right: 3px solid #2C3E50;
+            border-bottom: 3px solid #2C3E50;
+            clip-path: polygon(0 0, 100% 0, 100% 100%);
         }
         
         .message.bot {
             background-color: #FFE66D;
             align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message.bot::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 15px;
+            width: 20px;
+            height: 10px;
+            background-color: #FFE66D;
+            border-left: 3px solid #2C3E50;
+            border-bottom: 3px solid #2C3E50;
+            clip-path: polygon(0 0, 100% 0, 0 100%);
         }
         
         /* Markdown styling for bot messages */
@@ -294,7 +324,7 @@
             border-radius: 10px;
             padding: 10px;
             display: none;
-            grid-template-columns: repeat(8, 1fr);
+            grid-template-columns: repeat(9, 1fr);
             gap: 5px;
             box-shadow: 5px 5px 0 #2C3E50;
             z-index: 1000;
@@ -381,8 +411,9 @@
         }
         
         /* Color themes */
+        /* Hacker */
         .theme-hacker .chat-window {
-            background-color: #000000 !important;
+            background-color: #000000;
         }
         
         .theme-hacker .message.user {
@@ -394,9 +425,18 @@
             background-color: #003300;
             color: #00FF00;
         }
-        
+
+        .theme-hacker .message.user::after {
+            background-color: #00FF00;
+        }
+
+        .theme-hacker .message.bot::after {
+            background-color: #003300;
+        }
+
+        /* Soft */        
         .theme-soft .chat-window {
-            background-color: #FFF8F3 !important;
+            background-color: #FFF8F3;
         }
         
         .theme-soft .message.user {
@@ -406,9 +446,18 @@
         .theme-soft .message.bot {
             background-color: #B5EAD7;
         }
+
+        .theme-soft .message.user::after {
+            background-color: #FFB7B2;
+        }
+
+        .theme-soft .message.bot::after {
+            background-color: #B5EAD7;
+        }
+
         /* Ocean theme */
         .theme-ocean .chat-window {
-            background-color: #ACD2D7 !important;
+            background-color: #ACD2D7;
         }
         .theme-ocean .message.user {
             background-color: #0288D1;
@@ -418,10 +467,17 @@
             background-color: #26C6DA;
             color: #01579B;
         }
+        .theme-ocean .message.user::after {
+            background-color: #0288D1;
+        }
+
+        .theme-ocean .message.bot::after {
+            background-color: #26C6DA;
+        }
 
         /* Galaxy theme */
         .theme-galaxy .chat-window {
-            background-color: #1A1A2E !important;
+            background-color: #1A1A2E;
             color: silver;
         }
         .theme-galaxy .message.user {
@@ -433,10 +489,17 @@
             color: #97B2D3;
             border-color: #E94560;
         }
+        .theme-galaxy .message.user::after {
+            background-color: #E94560;
+        }
+
+        .theme-galaxy .message.bot::after {
+            background-color: #16213E;
+        }
 
         /* Neon theme */
         .theme-neon .chat-window {
-            background-color: #000000 !important;
+            background-color: #000000;
         }
         .theme-neon .message.user {
             background-color: #FF00FF;
@@ -448,18 +511,12 @@
             color: black;
             box-shadow: 0 0 10px #00FFFF;
         }
+        .theme-neon .message.user::after {
+            background-color: #FF00FF;
+        }
 
-        /* Forest theme */
-        .theme-forest .chat-window {
-            background-color: #F1F8E9 !important;
-        }
-        .theme-forest .message.user {
-            background-color: #558B2F;
-            color: white;
-        }
-        .theme-forest .message.bot {
-            background-color: #8BC34A;
-            color: #1B5E20;
+        .theme-neon .message.bot::after {
+            background-color: #00FFFF;
         }
         
         /* Font styles */
@@ -535,6 +592,48 @@
         .star-1 { top: -10px; left: 20px; transform: rotate(15deg); }
         .star-2 { top: -10px; right: 40px; transform: rotate(-20deg); }
         .star-3 { bottom: -10px; left: 50%; transform: rotate(30deg); }
+
+        /* Enhance the font appearance for better readability */
+        .message {
+            text-shadow: 0 1px 1px rgba(255, 255, 255, 0.2);
+        }
+
+        .theme-hacker .message.bot,
+        .theme-galaxy .message.bot,
+        .theme-neon .message.user {
+            text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Better spacing for message content */
+        .message.bot p:last-child,
+        .message.user p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Add subtle hover effect */
+        .message:hover {
+            transform: translateY(-2px);
+            box-shadow: 3px 5px 7px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Better styling for the chat window scrollbar */
+        .chat-window::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-window::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 4px;
+        }
+
+        .chat-window::-webkit-scrollbar-thumb {
+            background: #4ECDC4;
+            border-radius: 4px;
+        }
+
+        .chat-window::-webkit-scrollbar-thumb:hover {
+            background: #FF6B6B;
+        }
     </style>
 </head>
 <body>
@@ -569,7 +668,6 @@
                 <option value="theme-ocean">Ocean</option>
                 <option value="theme-galaxy">Galaxy</option>
                 <option value="theme-neon">Neon Lights</option>
-                <option value="theme-forest">Forest</option>
             </select>
             
             <button class="clear-button" id="clearButton">Clear Chat</button>
