@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Question Explorer!</title>
+    <!-- Add marked.js for markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Poppins:wght@400;700;900&family=Rubik:wght@400;700;900&display=swap');
         
@@ -11,7 +13,7 @@
             margin: 0;
             padding: 20px;
             background-color: #FF6B6B;
-            font-family: 'Nunito', sans-serif; /* Changed from Comic Neue */
+            font-family: 'Rubik', sans-serif;
             color: #2C3E50;
             min-height: 100vh;
             background-image: 
@@ -32,7 +34,7 @@
         }
         
         .title {
-            font-family: 'Rubik', sans-serif; /* Changed from Fredoka One */
+            font-family: 'Rubik', sans-serif;
             font-size: 3em;
             font-weight: 900;
             color: #2C3E50;
@@ -150,8 +152,74 @@
         .answer-content {
             font-size: 1.2em;
             line-height: 1.6;
-            white-space: pre-wrap;
             font-family: 'Nunito', sans-serif;
+        }
+        
+        /* Markdown styling */
+        .answer-content h1, .answer-content h2, .answer-content h3 {
+            color: #2C3E50;
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+            font-family: 'Rubik', sans-serif;
+        }
+        
+        .answer-content h1 { font-size: 1.8em; }
+        .answer-content h2 { font-size: 1.5em; }
+        .answer-content h3 { font-size: 1.3em; }
+        
+        .answer-content p {
+            margin-bottom: 1em;
+        }
+        
+        .answer-content ul, .answer-content ol {
+            margin-left: 1.5em;
+            margin-bottom: 1em;
+        }
+        
+        .answer-content li {
+            margin-bottom: 0.5em;
+        }
+        
+        .answer-content code {
+            background-color: #f0f0f0;
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+        
+        .answer-content pre {
+            background-color: #f0f0f0;
+            padding: 1em;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        
+        .answer-content blockquote {
+            border-left: 4px solid #4ECDC4;
+            margin-left: 0;
+            padding-left: 1em;
+            color: #666;
+        }
+        
+        .answer-content strong {
+            font-weight: 700;
+            color: #2C3E50;
+        }
+        
+        .answer-content em {
+            font-style: italic;
+        }
+        
+        .answer-content a {
+            color: #4ECDC4;
+            text-decoration: none;
+            border-bottom: 2px solid #4ECDC4;
+        }
+        
+        .answer-content a:hover {
+            color: #FF6B6B;
+            border-bottom-color: #FF6B6B;
         }
         
         .suggestions {
@@ -185,18 +253,6 @@
             background-color: #4ECDC4;
             transform: scale(1.05);
         }
-        
-        /* Font showcase for easy switching */
-        /* Uncomment the one you want to use */
-        
-        /* Option 1: Nunito (current) - rounded but more modern */
-        /* body, .question-input, .answer-content, .suggestion-button { font-family: 'Nunito', sans-serif; } */
-        
-        /* Option 2: Poppins - clean and geometric */
-        body, .question-input, .answer-content, .suggestion-button { font-family: 'Poppins', sans-serif; } 
-        
-        /* Option 3: Rubik - playful but less rounded */
-        /* body, .question-input, .answer-content, .suggestion-button { font-family: 'Rubik', sans-serif; } */
         
         /* Decorative elements */
         .star {
@@ -261,7 +317,7 @@
         const answerContent = document.getElementById('answerContent');
         const suggestionButtons = document.querySelectorAll('.suggestion-button');
 
-        const SYSTEM_PROMPT = `You are explaining to an 8-12 year old. Use simple language, fun analogies, and relatable examples. Make complex ideas easy to understand. Be encouraging and spark curiosity.`;
+        const SYSTEM_PROMPT = `You are answering questions that an 8-12 year old, but very precocious child is asking you. You will be acting as their 'assistant'! Speak in a casual way but don't talk down to them, they're very smart! Use simple language, fun analogies, and examples that would be relatable to a Gen Alpha child. Make complex ideas easy to understand. They may sometimes ask you out of context questions or just random stuff, in those cases play along :) Use markdown formatting to make your response more readable - use headers, bold, italics, lists, etc. when appropriate.`;
 
         async function getAnswer(question) {
             const API_ENDPOINT = '/.netlify/functions/ask';
@@ -307,7 +363,9 @@
                 console.log('Received answer:', answer);
                 loading.style.display = 'none';
                 answerContent.style.display = 'block';
-                answerContent.textContent = answer;
+                
+                // Convert markdown to HTML
+                answerContent.innerHTML = marked.parse(answer);
             } catch (error) {
                 console.error('Error in askQuestion:', error);
                 loading.style.display = 'none';
