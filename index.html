@@ -738,7 +738,7 @@
                 topK: 40,
                 saveHistory: true
             };
-        }
+            }
         
         function loadQuestionHistory() {
             const saved = localStorage.getItem('questionHistory');
@@ -831,6 +831,9 @@
             const API_ENDPOINT = '/.netlify/functions/ask';
             
             try {
+                console.log('Using provider:', settings.provider);
+                console.log('Using model:', settings.model);
+                
                 const response = await fetch(API_ENDPOINT, {
                 method: 'POST',
                 headers: {
@@ -861,7 +864,7 @@
                 console.error('Error details:', error);
                 throw error;
             }
-        }
+            }
 
         // Add a visual indicator for the active provider
         function addProviderIndicator() {
@@ -904,6 +907,50 @@
             
             document.body.appendChild(indicator);
         }
+
+        function updateProviderIndicator() {
+            const settings = getSettings();
+            
+            // Remove existing indicator if it exists
+            const existingIndicator = document.getElementById('providerIndicator');
+            if (existingIndicator) {
+                existingIndicator.remove();
+            }
+            
+            // Create provider indicator
+            const indicator = document.createElement('div');
+            indicator.id = 'providerIndicator';
+            indicator.className = 'provider-indicator';
+            
+            // Add provider logo or name
+            let providerName;
+            switch (settings.provider) {
+                case 'gemini': providerName = 'Gemini'; break;
+                case 'openai': providerName = 'OpenAI'; break;
+                case 'anthropic': providerName = 'Claude'; break;
+                case 'groq': providerName = 'Groq'; break;
+                case 'deepseek': providerName = 'DeepSeek'; break;
+                default: providerName = 'AI';
+            }
+            
+            indicator.textContent = `Powered by: ${providerName}`;
+            indicator.style.cssText = `
+                position: fixed;
+                bottom: 10px;
+                left: 10px;
+                background-color: #4ECDC4;
+                color: #2C3E50;
+                padding: 5px 10px;
+                border-radius: 20px;
+                font-family: 'Nunito', sans-serif;
+                font-size: 0.8em;
+                font-weight: 700;
+                border: 2px solid #2C3E50;
+                z-index: 1000;
+            `;
+            
+            document.body.appendChild(indicator);
+            }
 
         // Add favorite button to answer box
         function addFavoriteButton() {
@@ -1063,6 +1110,9 @@
                 // Get user settings
                 const settings = getSettings();
                 
+                // Update the provider indicator before making the request
+                updateProviderIndicator();
+                
                 const answer = await getAnswer(question, settings);
                 console.log('Received answer:', answer);
                 
@@ -1103,11 +1153,11 @@
                 console.error('Error in askQuestion:', error);
                 loading.style.display = 'none';
                 answerContent.style.display = 'block';
-                answerContent.innerHTML = '<div class="error-message">Oops! Something went wrong. Let\'s try again!</div>';
+                answerContent.innerHTML = `<div class="error-message">Error: ${error.message || 'Something went wrong. Please try again.'}</div>`;
             } finally {
                 askButton.disabled = false;
             }
-        }
+            }
 
         // Update favorite button state
         function updateFavoriteButtonState(question) {
@@ -1181,9 +1231,18 @@
             checkForFavoriteParam();
         });
 
+        // Update the page's visual state when it becomes visible
+        document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) {
+            // Update provider indicator when returning to the page
+            updateProviderIndicator();
+        }
+        });
+
+        // Call this on page load
         document.addEventListener('DOMContentLoaded', function() {
-            loadQuestionHistory();
-            addProviderIndicator();
+        loadQuestionHistory();
+        updateProviderIndicator();
         });
 
         askButton.addEventListener('click', askQuestion);
