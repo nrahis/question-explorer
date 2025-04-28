@@ -37,7 +37,9 @@ exports.handler = async function(event, context) {
         }],
         generationConfig: {
           temperature: 0.7,
-          maxOutputTokens: 500,
+          maxOutputTokens: 1024, // Increased from 500
+          topP: 0.8,
+          topK: 40
         }
       })
     });
@@ -49,16 +51,15 @@ exports.handler = async function(event, context) {
     }
 
     const data = await response.json();
-    console.log('Full Gemini response:', JSON.stringify(data, null, 2)); // Debug log
+    console.log('Full Gemini response:', JSON.stringify(data, null, 2));
     
-    // Check if we have a valid response structure
     if (!data.candidates || !data.candidates[0] || !data.candidates[0].content || !data.candidates[0].content.parts || !data.candidates[0].content.parts[0]) {
       console.error('Unexpected response structure:', data);
       throw new Error('Invalid response structure from Gemini API');
     }
     
     const answer = data.candidates[0].content.parts[0].text;
-    console.log('Extracted answer:', answer); // Debug log
+    console.log('Extracted answer:', answer);
     
     return {
       statusCode: 200,
