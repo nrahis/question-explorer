@@ -1,4 +1,8 @@
 // netlify/functions/ask.js
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
+}
+
 exports.handler = async function(event, context) {
   console.log('Function called with method:', event.httpMethod);
   

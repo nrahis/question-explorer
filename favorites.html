@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Favorites Explorer!</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Poppins:wght@400;700;900&family=Rubik:wght@400;700;900&display=swap');
+        
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Rubik', sans-serif;
+            color: #2C3E50;
+            min-height: 100vh;
+            background-image: url('assets/90s-sprinkles.svg');
+            background-repeat: repeat;
+            background-size: 100px 100px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #FFFFFF;
+            border: 6px solid #2C3E50;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 10px 10px 0 #2C3E50;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            min-height: calc(100vh - 100px);
+        }
+        
+        /* Navigation tab styles */
+        .nav-tabs {
+            position: absolute;
+            left: -50px;
+            top: 50px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .nav-tab {
+            width: 40px;
+            height: 80px;
+            background-color: #FFE66D;
+            border: 4px solid #2C3E50;
+            border-right: none;
+            border-radius: 10px 0 0 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            font-family: 'Rubik', sans-serif;
+            font-weight: 700;
+            font-size: 0.9em;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            color: #2C3E50;
+        }
+
+        .nav-tab:hover {
+            background-color: #4ECDC4;
+            box-shadow: -3px 3px 0 #2C3E50;
+        }
+
+        .nav-tab.active {
+            background-color: #FFFFFF;
+            transform: translateX(1px);
+            z-index: 1;
+            box-shadow: none;
+        }
+        
+        /* Title */
+        .title {
+            font-family: 'Rubik', sans-serif;
+            font-size: 3em;
+            font-weight: 900;
+            color: #2C3E50;
+            text-align: center;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            position: relative;
+        }
+        
+        .title::after {
+            content: '★';
+            position: absolute;
+            color: #FF6B6B;
+            font-size: 0.8em;
+            transform: rotate(15deg);
+            margin-left: 10px;
+        }
+        
+        /* Search and organization bar */
+        .control-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .search-container {
+            position: relative;
+            width: 65%; /* Takes 65% of the space */
+            max-width: 65%;
+            flex-shrink: 1;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 15px;
+            padding-left: 45px;
+            font-size: 1.1em;
+            border: 4px solid #2C3E50;
+            border-radius: 10px;
+            background-color: #FFFFFF;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            box-shadow: 4px 4px 0 #2C3E50;
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2em;
+        }
+        
+        .sort-selector, .filter-selector {
+            background-color: #FFE66D;
+            border: 3px solid #2C3E50;
+            border-radius: 8px;
+            padding: 10px 15px;
+            font-family: 'Rubik', sans-serif;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .sort-selector, .filter-selector {
+            min-width: 120px; /* Add minimum width to prevent squishing */
+        }
+
+        .sort-selector {
+            width: 25%; /* Fixed width */
+            min-width: 140px;
+            max-width: 160px;
+            background-color: #FFE66D;
+            border: 3px solid #2C3E50;
+            border-radius: 8px;
+            padding: 10px 15px;
+            font-family: 'Rubik', sans-serif;
+            font-weight: 700;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .view-toggle {
+            display: flex;
+            border: 3px solid #2C3E50;
+            border-radius: 8px;
+            overflow: hidden;
+            width: auto;
+            flex-shrink: 0;
+        }
+
+        .view-toggle-btn {
+            background-color: #F7FFF7;
+            border: none;
+            padding: 10px;
+            font-family: 'Rubik', sans-serif;
+            font-weight: 700;
+            cursor: pointer;
+            width: 40px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .view-toggle-btn.active {
+            background-color: #4ECDC4;
+        }
+        
+        /* Tag filter section */
+        .tag-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            background-color: #F7FFF7;
+            border: 3px solid #2C3E50;
+            border-radius: 10px;
+            padding: 15px;
+        }
+        
+        .tag {
+            background-color: #FFE66D;
+            border: 2px solid #2C3E50;
+            border-radius: 20px;
+            padding: 5px 15px;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 700;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .tag.active {
+            background-color: #FF6B6B;
+            color: white;
+        }
+        
+        .tag:hover {
+            transform: translateY(-2px);
+            box-shadow: 2px 2px 0 #2C3E50;
+        }
+        
+        /* Favorites content */
+
+        .favorites-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow-y: auto;
+        }
+        
+        /* Card view */
+        .favorites-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+            padding-top: 5px; /* Add padding to prevent cutoff */
+        }
+        
+        .favorite-card {
+            background-color: #FFFFFF;
+            border: 4px solid #2C3E50;
+            border-radius: 15px;
+            padding: 15px;
+            position: relative;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.1);
+        }
+        
+        .favorite-card:hover {
+            transform: translateY(-3px); /* Reduced from -5px */
+            box-shadow: 5px 10px 0 rgba(0, 0, 0, 0.1);
+            /* Add margin to prevent cutoff */
+            margin-top: 3px;
+        }
+        
+        .favorite-card-color-top {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 10px;
+            background-color: #4ECDC4;
+        }
+        
+        .favorite-card.math .favorite-card-color-top { background-color: #FF6B6B; }
+        .favorite-card.space .favorite-card-color-top { background-color: #6C5CE7; }
+        .favorite-card.animals .favorite-card-color-top { background-color: #00B894; }
+        .favorite-card.history .favorite-card-color-top { background-color: #FDCB6E; }
+        .favorite-card.science .favorite-card-color-top { background-color: #00CEC9; }
+        .favorite-card.weird .favorite-card-color-top { background-color: #E84393; }
+        
+        .favorite-card-header {
+            margin-top: 5px;
+            padding-bottom: 10px;
+            border-bottom: 2px dashed #E0E0E0;
+            margin-bottom: 10px;
+        }
+        
+        .favorite-question {
+            font-family: 'Nunito', sans-serif;
+            font-weight: 700;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+        
+        .favorite-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8em;
+            color: #666;
+        }
+        
+        .favorite-preview {
+            font-size: 0.9em;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            flex: 1;
+            color: #666;
+        }
+        
+        .favorite-action-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 2px dashed #E0E0E0;
+        }
+        
+        .favorite-btn {
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 1.2em;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px;
+            border-radius: 5px;
+        }
+        
+        .favorite-btn:hover {
+            background-color: #F0F0F0;
+        }
+        
+        .favorite-btn.delete:hover {
+            background-color: #FFEEEE;
+            color: #FF6B6B;
+        }
+        
+        .favorite-btn.edit:hover {
+            background-color: #EEEEFF;
+            color: #6C5CE7;
+        }
+        
+        .favorite-btn.view {
+            background-color: #4ECDC4;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: 700;
+            font-size: 0.9em;
+        }
+        
+        .favorite-btn.view:hover {
+            background-color: #3DBDB3;
+            transform: translateY(-2px);
+        }
+        
+        .favorite-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        
+        .favorite-tag {
+            background-color: #F0F0F0;
+            font-size: 0.8em;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+        
+        /* List view */
+        .favorites-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .favorite-list-item {
+            background-color: #FFFFFF;
+            border: 3px solid #2C3E50;
+            border-radius: 10px;
+            padding: 15px;
+            position: relative;
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: space-between;
+            overflow: hidden;
+        }
+        
+        .favorite-list-item:hover {
+            transform: translateX(5px);
+            box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.1);
+        }
+        
+        .favorite-list-color {
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 10px;
+            background-color: #4ECDC4;
+        }
+        
+        .favorite-list-item.math .favorite-list-color { background-color: #FF6B6B; }
+        .favorite-list-item.space .favorite-list-color { background-color: #6C5CE7; }
+        .favorite-list-item.animals .favorite-list-color { background-color: #00B894; }
+        .favorite-list-item.history .favorite-list-color { background-color: #FDCB6E; }
+        .favorite-list-item.science .favorite-list-color { background-color: #00CEC9; }
+        .favorite-list-item.weird .favorite-list-color { background-color: #E84393; }
+        
+        .favorite-list-content {
+            flex: 1;
+            padding-left: 15px;
+        }
+        
+        .favorite-list-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        /* Empty state */
+        .empty-favorites {
+            text-align: center;
+            padding: 50px 20px;
+            color: #666;
+        }
+        
+        .empty-favorites-icon {
+            font-size: 3em;
+            margin-bottom: 20px;
+            color: #FFE66D;
+        }
+        
+        .empty-favorites-title {
+            font-family: 'Rubik', sans-serif;
+            font-weight: 700;
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+        
+        .empty-favorites-text {
+            margin-bottom: 20px;
+        }
+        
+        .explore-btn {
+            background-color: #4ECDC4;
+            color: #2C3E50;
+            border: 3px solid #2C3E50;
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-family: 'Rubik', sans-serif;
+            font-weight: 700;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-block;
+        }
+        
+        .explore-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 3px 3px 0 #2C3E50;
+        }
+        
+        /* Notes modal */
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal-backdrop.visible {
+            display: flex;
+        }
+        
+        .modal {
+            background-color: white;
+            border: 6px solid #2C3E50;
+            border-radius: 20px;
+            box-shadow: 10px 10px 0 rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 600px;
+            padding: 20px;
+            position: relative;
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+        }
+        
+        .modal-title {
+            font-family: 'Rubik', sans-serif;
+            font-weight: 700;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #2C3E50;
+        }
+        
+        .notes-textarea {
+            width: 100%;
+            min-height: 150px;
+            border: 3px solid #2C3E50;
+            border-radius: 10px;
+            padding: 15px;
+            font-family: 'Nunito', sans-serif;
+            font-size: 1.1em;
+            margin-bottom: 20px;
+        }
+        
+        .tag-selector {
+            margin-bottom: 20px;
+        }
+        
+        .tag-selector-title {
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .tag-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .modal-btn {
+            background-color: #FFE66D;
+            color: #2C3E50;
+            border: 3px solid #2C3E50;
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-family: 'Rubik', sans-serif;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .modal-btn.save {
+            background-color: #4ECDC4;
+        }
+        
+        .modal-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 3px 3px 0 #2C3E50;
+        }
+        
+        /* Decorative elements */
+        .star {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: #FFE66D;
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+        }
+        
+        .star-1 { top: -10px; left: 20px; transform: rotate(15deg); }
+        .star-2 { top: -10px; right: 40px; transform: rotate(-20deg); }
+        .star-3 { bottom: -10px; left: 50%; transform: rotate(30deg); }
+        
+        /* Responsive styles */
+        @media (max-width: 600px) {
+            .nav-tabs {
+                position: static;
+                flex-direction: row;
+                margin-bottom: 20px;
+                left: 0;
+                top: 0;
+            }
+            
+            .nav-tab {
+                width: auto;
+                height: 40px;
+                padding: 0 20px;
+                writing-mode: horizontal-tb;
+                border: 4px solid #2C3E50;
+                border-radius: 10px 10px 0 0;
+                border-bottom: none;
+            }
+            
+            .nav-tab.active {
+                transform: translateY(1px);
+                box-shadow: none;
+            }
+            
+            .nav-tab:hover {
+                box-shadow: 0 -3px 0 #2C3E50;
+            }
+            
+            .control-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-container {
+                width: 100%;
+                max-width: 100%;
+                margin-bottom: 10px;
+            }
+            
+            .sort-selector {
+                width: 100%;
+                max-width: 100%;
+                margin-bottom: 10px;
+            }
+            
+            .view-toggle {
+                align-self: center;
+            }
+                    
+            .sort-selector, .filter-selector {
+                width: 100%;
+            }
+            
+            .favorites-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Scrollbar styling */
+        .favorites-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .favorites-content::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 4px;
+        }
+        
+        .favorites-content::-webkit-scrollbar-thumb {
+            background: #4ECDC4;
+            border-radius: 4px;
+        }
+        
+        .favorites-content::-webkit-scrollbar-thumb:hover {
+            background: #FF6B6B;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav-tabs">
+            <a href="index.html" class="nav-tab">ASK</a>
+            <a href="chat.html" class="nav-tab">CHAT</a>
+            <a href="favorites.html" class="nav-tab active">★</a>
+        </div>
+        
+        <div class="star star-1"></div>
+        <div class="star star-2"></div>
+        <div class="star star-3"></div>
+        
+        <h1 class="title">Favorites Explorer</h1>
+        
+        <div class="control-bar">
+            <div class="search-container">
+                <span class="search-icon">🔍</span>
+                <input type="text" class="search-input" id="searchInput" placeholder="Search your favorites...">
+            </div>
+            
+            <select class="sort-selector" id="sortSelector">
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+                <option value="az">A to Z</option>
+                <option value="za">Z to A</option>
+            </select>
+            
+            <div class="view-toggle">
+                <button class="view-toggle-btn active" id="gridViewBtn">📱</button>
+                <button class="view-toggle-btn" id="listViewBtn">📋</button>
+            </div>
+        </div>
+        
+        <div class="tag-filters" id="tagFilters">
+            <div class="tag active" data-tag="all">All</div>
+            <div class="tag" data-tag="space">Space</div>
+            <div class="tag" data-tag="math">Math</div>
+            <div class="tag" data-tag="animals">Animals</div>
+            <div class="tag" data-tag="science">Science</div>
+            <div class="tag" data-tag="history">History</div>
+            <div class="tag" data-tag="weird">Weird Facts</div>
+            <div class="tag" data-tag="untagged">Untagged</div>
+        </div>
+        
+        <div class="favorites-content">
+            <div class="favorites-grid" id="favoritesGrid">
+                <!-- Favorite items will be loaded here -->
+            </div>
+            
+            <div class="favorites-list" id="favoritesList" style="display: none;">
+                <!-- Favorite items will be loaded here (list view) -->
+            </div>
+            
+            <!-- Empty state -->
+            <div class="empty-favorites" id="emptyState" style="display: none;">
+                <div class="empty-favorites-icon">⭐</div>
+                <div class="empty-favorites-title">No favorites yet!</div>
+                <div class="empty-favorites-text">When you find cool answers you like, just click the star to save them here.</div>
+                <a href="index.html" class="explore-btn">Ask a Question</a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Edit Notes Modal -->
+    <div class="modal-backdrop" id="notesModal">
+        <div class="modal">
+            <button class="modal-close" id="modalClose">✖</button>
+            <div class="modal-title">Add Notes</div>
+            
+            <textarea class="notes-textarea" id="notesTextarea" placeholder="Add your notes here..."></textarea>
+            
+            <div class="tag-selector">
+                <div class="tag-selector-title">Choose a category:</div>
+                <div class="tag-options">
+                    <div class="tag" data-tag="space">Space</div>
+                    <div class="tag" data-tag="math">Math</div>
+                    <div class="tag" data-tag="animals">Animals</div>
+                    <div class="tag" data-tag="science">Science</div>
+                    <div class="tag" data-tag="history">History</div>
+                    <div class="tag" data-tag="weird">Weird Facts</div>
+                </div>
+            </div>
+            
+            <div class="modal-buttons">
+                <button class="modal-btn" id="modalCancel">Cancel</button>
+                <button class="modal-btn save" id="modalSave">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const searchInput = document.getElementById('searchInput');
+        const sortSelector = document.getElementById('sortSelector');
+        const gridViewBtn = document.getElementById('gridViewBtn');
+        const listViewBtn = document.getElementById('listViewBtn');
+        const favoritesGrid = document.getElementById('favoritesGrid');
+        const favoritesList = document.getElementById('favoritesList');
+        const emptyState = document.getElementById('emptyState');
+        const tagFilters = document.getElementById('tagFilters');
+        const notesModal = document.getElementById('notesModal');
+        const notesTextarea = document.getElementById('notesTextarea');
+        const modalClose = document.getElementById('modalClose');
+        const modalCancel = document.getElementById('modalCancel');
+        const modalSave = document.getElementById('modalSave');
+        
+        // State
+        let favorites = [];
+        let currentView = 'grid';
+        let currentFilter = 'all';
+        let currentSort = 'newest';
+        let currentEditId = null;
+        
+        // Load favorites from localStorage
+        function loadFavorites() {
+            const saved = localStorage.getItem('favorites');
+            if (saved) {
+                favorites = JSON.parse(saved);
+                renderFavorites();
+            } else {
+                showEmptyState();
+            }
+        }
+        
+        // Save favorites to localStorage
+        function saveFavorites() {
+            localStorage.setItem('favorites', JSON.stringify(favorites));
+        }
+        
+        // Show empty state if no favorites
+        function showEmptyState() {
+            if (favorites.length === 0) {
+                favoritesGrid.style.display = 'none';
+                favoritesList.style.display = 'none';
+                emptyState.style.display = 'block';
+            } else {
+                emptyState.style.display = 'none';
+                
+                if (currentView === 'grid') {
+                    favoritesGrid.style.display = 'grid';
+                    favoritesList.style.display = 'none';
+                } else {
+                    favoritesGrid.style.display = 'none';
+                    favoritesList.style.display = 'flex';
+                }
+            }
+        }
+        
+        // Format date
+        function formatDate(timestamp) {
+            const date = new Date(timestamp);
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+        }
+        
+        // Truncate text
+        function truncateText(text, length = 100) {
+            if (text.length <= length) return text;
+            return text.substring(0, length) + '...';
+        }
+        
+        // Filter favorites based on search and tag
+        function filterFavorites() {
+            const searchTerm = searchInput.value.toLowerCase();
+            
+            return favorites.filter(favorite => {
+                // Filter by search term
+                const matchesSearch = 
+                    favorite.question.toLowerCase().includes(searchTerm) || 
+                    favorite.answer.toLowerCase().includes(searchTerm) ||
+                    (favorite.notes && favorite.notes.toLowerCase().includes(searchTerm));
+                
+                // Filter by tag
+                const matchesTag = 
+                    currentFilter === 'all' || 
+                    (currentFilter === 'untagged' && !favorite.tags?.length) ||
+                    (favorite.tags && favorite.tags.includes(currentFilter));
+                
+                return matchesSearch && matchesTag;
+            });
+        }
+        
+        // Sort favorites
+        function sortFavorites(filteredFavorites) {
+            switch (currentSort) {
+                case 'newest':
+                    return filteredFavorites.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                case 'oldest':
+                    return filteredFavorites.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+                case 'az':
+                    return filteredFavorites.sort((a, b) => a.question.localeCompare(b.question));
+                case 'za':
+                    return filteredFavorites.sort((a, b) => b.question.localeCompare(a.question));
+                default:
+                    return filteredFavorites;
+            }
+        }
+        
+        // Render favorites to the DOM
+        function renderFavorites() {
+            // Apply filters and sort
+            const filteredFavorites = filterFavorites();
+            const sortedFavorites = sortFavorites(filteredFavorites);
+            
+            // Check if we have any results
+            if (sortedFavorites.length === 0) {
+                favoritesGrid.innerHTML = '';
+                favoritesList.innerHTML = '';
+                
+                if (searchInput.value || currentFilter !== 'all') {
+                    // Show "no results" for search/filter
+                    favoritesGrid.innerHTML = `
+                        <div class="empty-favorites" style="grid-column: 1 / -1;">
+                            <div class="empty-favorites-icon">🔍</div>
+                            <div class="empty-favorites-title">No matches found</div>
+                            <div class="empty-favorites-text">Try a different search term or filter</div>
+                        </div>
+                    `;
+                    favoritesList.innerHTML = favoritesGrid.innerHTML;
+                    
+                    favoritesGrid.style.display = currentView === 'grid' ? 'grid' : 'none';
+                    favoritesList.style.display = currentView === 'list' ? 'flex' : 'none';
+                    emptyState.style.display = 'none';
+                } else {
+                    // Show "no favorites" state
+                    showEmptyState();
+                }
+                return;
+            }
+            
+            // We have results to show
+            emptyState.style.display = 'none';
+            
+            // Render grid view
+            favoritesGrid.innerHTML = '';
+            sortedFavorites.forEach(favorite => {
+                const primaryTag = favorite.tags && favorite.tags.length > 0 ? favorite.tags[0] : 'untagged';
+                
+                const cardElement = document.createElement('div');
+                cardElement.className = `favorite-card ${primaryTag}`;
+                cardElement.innerHTML = `
+<div class="favorite-card-color-top"></div>
+                    <div class="favorite-card-header">
+                        <div class="favorite-question">${favorite.question}</div>
+                        <div class="favorite-meta">
+                            <div class="favorite-date">${formatDate(favorite.timestamp)}</div>
+                            <div class="favorite-id">#${favorite.id.substring(0, 6)}</div>
+                        </div>
+                    </div>
+                    <div class="favorite-preview">${truncateText(favorite.answer.replace(/\*\*/g, '').replace(/\n/g, ' '), 120)}</div>
+                    <div class="favorite-tags">
+                        ${favorite.tags ? favorite.tags.map(tag => `<span class="favorite-tag">${tag}</span>`).join('') : ''}
+                        ${favorite.notes ? '<span class="favorite-tag">📝 Has notes</span>' : ''}
+                    </div>
+                    <div class="favorite-action-bar">
+                        <button class="favorite-btn edit" data-id="${favorite.id}">📝</button>
+                        <button class="favorite-btn view" data-id="${favorite.id}">View Answer</button>
+                        <button class="favorite-btn delete" data-id="${favorite.id}">🗑️</button>
+                    </div>
+                `;
+                favoritesGrid.appendChild(cardElement);
+            });
+            
+            // Render list view
+            favoritesList.innerHTML = '';
+            sortedFavorites.forEach(favorite => {
+                const primaryTag = favorite.tags && favorite.tags.length > 0 ? favorite.tags[0] : 'untagged';
+                
+                const listElement = document.createElement('div');
+                listElement.className = `favorite-list-item ${primaryTag}`;
+                listElement.innerHTML = `
+                    <div class="favorite-list-color"></div>
+                    <div class="favorite-list-content">
+                        <div class="favorite-question">${favorite.question}</div>
+                        <div class="favorite-meta">
+                            <div class="favorite-date">${formatDate(favorite.timestamp)}</div>
+                            ${favorite.tags ? favorite.tags.map(tag => `<span class="favorite-tag">${tag}</span>`).join('') : ''}
+                            ${favorite.notes ? '<span class="favorite-tag">📝 Has notes</span>' : ''}
+                        </div>
+                    </div>
+                    <div class="favorite-list-actions">
+                        <button class="favorite-btn edit" data-id="${favorite.id}">📝</button>
+                        <button class="favorite-btn view" data-id="${favorite.id}">View</button>
+                        <button class="favorite-btn delete" data-id="${favorite.id}">🗑️</button>
+                    </div>
+                `;
+                favoritesList.appendChild(listElement);
+            });
+            
+            // Show the current view
+            favoritesGrid.style.display = currentView === 'grid' ? 'grid' : 'none';
+            favoritesList.style.display = currentView === 'list' ? 'flex' : 'none';
+            
+            // Add event listeners to action buttons
+            document.querySelectorAll('.favorite-btn.edit').forEach(btn => {
+                btn.addEventListener('click', () => openEditModal(btn.dataset.id));
+            });
+            
+            document.querySelectorAll('.favorite-btn.delete').forEach(btn => {
+                btn.addEventListener('click', () => deleteFavorite(btn.dataset.id));
+            });
+            
+            document.querySelectorAll('.favorite-btn.view').forEach(btn => {
+                btn.addEventListener('click', () => viewFavorite(btn.dataset.id));
+            });
+        }
+        
+        // Handle view toggling
+        gridViewBtn.addEventListener('click', () => {
+            gridViewBtn.classList.add('active');
+            listViewBtn.classList.remove('active');
+            currentView = 'grid';
+            renderFavorites();
+        });
+        
+        listViewBtn.addEventListener('click', () => {
+            listViewBtn.classList.add('active');
+            gridViewBtn.classList.remove('active');
+            currentView = 'list';
+            renderFavorites();
+        });
+        
+        // Handle search input
+        searchInput.addEventListener('input', () => {
+            renderFavorites();
+        });
+        
+        // Handle sort selection
+        sortSelector.addEventListener('change', () => {
+            currentSort = sortSelector.value;
+            renderFavorites();
+        });
+        
+        // Handle tag filtering
+        tagFilters.addEventListener('click', (e) => {
+            if (e.target.classList.contains('tag')) {
+                // Update active tag
+                document.querySelectorAll('#tagFilters .tag').forEach(tag => {
+                    tag.classList.remove('active');
+                });
+                e.target.classList.add('active');
+                
+                // Update filter and re-render
+                currentFilter = e.target.dataset.tag;
+                renderFavorites();
+            }
+        });
+        
+        // Modal functions
+        function openEditModal(id) {
+            currentEditId = id;
+            const favorite = favorites.find(f => f.id === id);
+            
+            notesTextarea.value = favorite.notes || '';
+            
+            // Reset all tags
+            document.querySelectorAll('.tag-options .tag').forEach(tag => {
+                tag.classList.remove('active');
+            });
+            
+            // Set active tags
+            if (favorite.tags) {
+                favorite.tags.forEach(tag => {
+                    const tagElement = document.querySelector(`.tag-options .tag[data-tag="${tag}"]`);
+                    if (tagElement) {
+                        tagElement.classList.add('active');
+                    }
+                });
+            }
+            
+            notesModal.classList.add('visible');
+        }
+        
+        function closeModal() {
+            notesModal.classList.remove('visible');
+            currentEditId = null;
+        }
+        
+        modalClose.addEventListener('click', closeModal);
+        modalCancel.addEventListener('click', closeModal);
+        
+        // Handle tag selection in modal
+        document.querySelectorAll('.tag-options .tag').forEach(tag => {
+            tag.addEventListener('click', () => {
+                tag.classList.toggle('active');
+            });
+        });
+        
+        // Save notes and tags
+        modalSave.addEventListener('click', () => {
+            if (!currentEditId) return;
+            
+            // Find the favorite to update
+            const index = favorites.findIndex(f => f.id === currentEditId);
+            if (index === -1) return;
+            
+            // Get selected tags
+            const selectedTags = [];
+            document.querySelectorAll('.tag-options .tag.active').forEach(tag => {
+                selectedTags.push(tag.dataset.tag);
+            });
+            
+            // Update the favorite
+            favorites[index].notes = notesTextarea.value.trim();
+            favorites[index].tags = selectedTags;
+            
+            // Save and re-render
+            saveFavorites();
+            renderFavorites();
+            closeModal();
+        });
+        
+        // Delete a favorite
+        function deleteFavorite(id) {
+            if (confirm('Are you sure you want to remove this from your favorites?')) {
+                favorites = favorites.filter(f => f.id !== id);
+                saveFavorites();
+                renderFavorites();
+            }
+        }
+        
+        // View a favorite answer
+        function viewFavorite(id) {
+            // Store the current ID as the last viewed favorite
+            localStorage.setItem('lastViewedFavorite', id);
+            // Redirect to the question page
+            window.location.href = 'index.html?favorite=' + id;
+        }
+        
+        // Initialize
+        loadFavorites();
+        
+        // Check for URL parameters on load
+        function checkUrlParams() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const filterParam = urlParams.get('filter');
+            const searchParam = urlParams.get('search');
+            
+            if (filterParam) {
+                // Set active filter if it exists
+                const filterElement = document.querySelector(`#tagFilters .tag[data-tag="${filterParam}"]`);
+                if (filterElement) {
+                    document.querySelectorAll('#tagFilters .tag').forEach(tag => {
+                        tag.classList.remove('active');
+                    });
+                    filterElement.classList.add('active');
+                    currentFilter = filterParam;
+                }
+            }
+            
+            if (searchParam) {
+                searchInput.value = searchParam;
+            }
+            
+            // Re-render if any parameters were applied
+            if (filterParam || searchParam) {
+                renderFavorites();
+            }
+        }
+        
+        checkUrlParams();
+    </script>
+</body>
+</html>

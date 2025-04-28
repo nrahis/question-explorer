@@ -12,14 +12,12 @@
         body {
             margin: 0;
             padding: 20px;
-            background-color: #FF6B6B;
             font-family: 'Rubik', sans-serif;
             color: #2C3E50;
             min-height: 100vh;
-            background-image: 
-                radial-gradient(circle at 10% 20%, #FFE66D 15px, transparent 16px),
-                radial-gradient(circle at 90% 80%, #4ECDC4 15px, transparent 16px),
-                radial-gradient(circle at 40% 60%, #FF6B6B 10px, transparent 11px);
+            background-image: url('assets/90s-sprinkles.svg');
+            background-repeat: repeat;
+            background-size: 100px 100px;
         }
         
         .container {
@@ -31,6 +29,9 @@
             padding: 30px;
             box-shadow: 10px 10px 0 #2C3E50;
             position: relative;
+            display: flex;
+            flex-direction: column;
+            min-height: calc(100vh - 100px);
         }
         
         /* Navigation tab styles */
@@ -63,15 +64,20 @@
             text-decoration: none;
             color: #2C3E50;
         }
-        
+
         .nav-tab:hover {
             background-color: #4ECDC4;
-            transform: translateX(-5px);
+            /* Remove the transform that causes detachment */
+            /* transform: translateX(-5px); */
+            box-shadow: -3px 3px 0 #2C3E50;
         }
-        
+
         .nav-tab.active {
             background-color: #FFFFFF;
-            transform: translateX(4px);
+            /* Adjust transform to ensure it stays connected */
+            transform: translateX(1px);
+            z-index: 1;
+            box-shadow: none;
         }
         
         /* Adjust container for mobile */
@@ -95,11 +101,14 @@
             }
             
             .nav-tab.active {
-                transform: translateY(4px);
+                transform: translateY(1px);
+                box-shadow: none;
             }
             
             .nav-tab:hover {
-                transform: translateY(-5px);
+                /* Adjust for mobile horizontal tabs */
+                /* transform: translateY(-5px); */
+                box-shadow: 0 -3px 0 #2C3E50;
             }
         }
         
@@ -292,9 +301,16 @@
             border-bottom-color: #FF6B6B;
         }
         
+        /* Enhanced suggestions area */
+        .suggestions-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            margin-top: 30px;
+        }
+        
         .suggestions {
-            margin-top: 40px;
-            text-align: center;
+            margin-bottom: 20px;
         }
         
         .suggestions-title {
@@ -303,25 +319,131 @@
             font-weight: 700;
             color: #2C3E50;
             margin-bottom: 15px;
+            text-align: center;
         }
         
-        .suggestion-button {
+        .topics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        
+        .topic-button {
             background-color: #FFE66D;
             border: 3px solid #2C3E50;
-            border-radius: 20px;
-            padding: 8px 16px;
-            margin: 5px;
-            font-size: 1em;
-            font-family: 'Nunito', sans-serif;
-            font-weight: bold;
+            border-radius: 12px;
+            padding: 15px 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
             cursor: pointer;
             transition: all 0.2s ease;
-            display: inline-block;
         }
         
-        .suggestion-button:hover {
+        .topic-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 0 #2C3E50;
             background-color: #4ECDC4;
-            transform: scale(1.05);
+        }
+        
+        .topic-icon {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+        
+        .topic-name {
+            font-family: 'Nunito', sans-serif;
+            font-weight: 700;
+            font-size: 1em;
+            text-align: center;
+        }
+        
+        /* Recent questions section */
+        .recent-questions {
+            margin-top: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .recent-questions-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .recent-questions-title {
+            font-family: 'Rubik', sans-serif;
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #2C3E50;
+        }
+        
+        .clear-history {
+            background-color: #FF6B6B;
+            color: white;
+            border: 2px solid #2C3E50;
+            border-radius: 8px;
+            padding: 5px 10px;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 700;
+            font-size: 0.8em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .clear-history:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 0 #2C3E50;
+        }
+        
+        .question-history-list {
+            background-color: #F7FFF7;
+            border: 3px solid #2C3E50;
+            border-radius: 12px;
+            padding: 10px;
+            overflow-y: auto;
+            max-height: 200px;
+            flex: 1;
+        }
+        
+        .question-history-item {
+            padding: 10px;
+            border-bottom: 2px solid #E0E0E0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .question-history-item:last-child {
+            border-bottom: none;
+        }
+        
+        .question-history-item:hover {
+            background-color: #FFE66D;
+            border-radius: 8px;
+        }
+        
+        .question-text {
+            font-family: 'Nunito', sans-serif;
+            flex: 1;
+        }
+        
+        .question-time {
+            color: #666;
+            font-size: 0.8em;
+            white-space: nowrap;
+            margin-left: 10px;
+        }
+        
+        .no-questions {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-style: italic;
         }
         
         /* Decorative elements */
@@ -342,6 +464,25 @@
             text-align: center;
             font-weight: bold;
         }
+        
+        /* Scrollbar styling */
+        .question-history-list::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .question-history-list::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 4px;
+        }
+        
+        .question-history-list::-webkit-scrollbar-thumb {
+            background: #4ECDC4;
+            border-radius: 4px;
+        }
+        
+        .question-history-list::-webkit-scrollbar-thumb:hover {
+            background: #FF6B6B;
+        }
     </style>
 </head>
 <body>
@@ -358,8 +499,8 @@
         <h1 class="title">Question Explorer</h1>
         
         <div class="question-container">
-            <input type="text" class="question-input" placeholder="Ask me anything! (ex: How do airplanes fly?)">
-            <button class="ask-button">Ask Away!</button>
+            <input type="text" class="question-input" id="questionInput" placeholder="Ask me anything! (ex: How do airplanes fly?)">
+            <button class="ask-button" id="askButton">Ask Away!</button>
         </div>
         
         <div class="answer-box" id="answerBox">
@@ -374,25 +515,259 @@
             <div class="answer-content" id="answerContent"></div>
         </div>
         
-        <div class="suggestions">
-            <div class="suggestions-title">Try asking about:</div>
-            <button class="suggestion-button" data-question="How big is the universe?">Space</button>
-            <button class="suggestion-button" data-question="Why do we dream?">Dreams</button>
-            <button class="suggestion-button" data-question="How do computers think?">Computers</button>
-            <button class="suggestion-button" data-question="What makes rainbows?">Nature</button>
-            <button class="suggestion-button" data-question="How do animals communicate?">Animals</button>
+        <div class="suggestions-area">
+            <div class="suggestions">
+                <div class="suggestions-title">Choose a Topic to Explore:</div>
+                <div class="topics-grid">
+                    <div class="topic-button" data-topic="space">
+                        <div class="topic-icon">🚀</div>
+                        <div class="topic-name">Space</div>
+                    </div>
+                    <div class="topic-button" data-topic="cats">
+                        <div class="topic-icon">🐱</div>
+                        <div class="topic-name">Cats</div>
+                    </div>
+                    <div class="topic-button" data-topic="math">
+                        <div class="topic-icon">🔢</div>
+                        <div class="topic-name">Math</div>
+                    </div>
+                    <div class="topic-button" data-topic="weird">
+                        <div class="topic-icon">🤯</div>
+                        <div class="topic-name">Weird Facts</div>
+                    </div>
+                    <div class="topic-button" data-topic="weather">
+                        <div class="topic-icon">⛈️</div>
+                        <div class="topic-name">Weather</div>
+                    </div>
+                    <div class="topic-button" data-topic="history">
+                        <div class="topic-icon">🏛️</div>
+                        <div class="topic-name">Cool History</div>
+                    </div>
+                    <div class="topic-button" data-topic="computers">
+                        <div class="topic-icon">💻</div>
+                        <div class="topic-name">Computers</div>
+                    </div>
+                    <div class="topic-button" data-topic="animals">
+                        <div class="topic-icon">🦊</div>
+                        <div class="topic-name">Animals</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="recent-questions">
+                <div class="recent-questions-header">
+                    <div class="recent-questions-title">Your Recent Questions:</div>
+                    <button class="clear-history" id="clearHistoryBtn">Clear History</button>
+                </div>
+                <div class="question-history-list" id="questionHistoryList">
+                    <div class="no-questions">No questions yet. Ask something!</div>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        const questionInput = document.querySelector('.question-input');
-        const askButton = document.querySelector('.ask-button');
+        const questionInput = document.getElementById('questionInput');
+        const askButton = document.getElementById('askButton');
         const answerBox = document.getElementById('answerBox');
         const loading = document.getElementById('loading');
         const answerContent = document.getElementById('answerContent');
-        const suggestionButtons = document.querySelectorAll('.suggestion-button');
+        const topicButtons = document.querySelectorAll('.topic-button');
+        const questionHistoryList = document.getElementById('questionHistoryList');
+        const clearHistoryBtn = document.getElementById('clearHistoryBtn');
 
         const SYSTEM_PROMPT = `You are answering questions that an 8-12 year old, but very precocious child is asking you. You will be acting as their 'assistant'! Speak in a casual way but don't talk down to them, they're very smart! Use simple language, fun analogies, and examples that would be relatable to a Gen Alpha child. Make complex ideas easy to understand. They may sometimes ask you out of context questions or just random stuff, in those cases play along :) The child is particularly interested in complex math (giant numbers like Graham's number, tetration, stuff like that), technology (coding, computers in general, vintage tech and operating systems), and also has a fondness for snakes, the color red, and cats. Use markdown formatting to make your response more readable - use headers, bold, italics, lists, etc. when appropriate.`;
+
+        // Question collections by topic
+        const TOPIC_QUESTIONS = {
+            space: [
+                "How big is the universe?",
+                "Why is space black?",
+                "How many planets are in our solar system?",
+                "What are black holes?",
+                "How do stars form?",
+                "Can humans live on Mars?",
+                "What is the Milky Way?",
+                "How old is the universe?",
+                "What is the International Space Station?",
+                "Are there other galaxies?"
+            ],
+            cats: [
+                "Why do cats purr?",
+                "How do cats always land on their feet?",
+                "Why do cats knead with their paws?",
+                "How far can cats jump?",
+                "Why do cats have whiskers?",
+                "How many hours do cats sleep each day?",
+                "Can cats see in complete darkness?",
+                "Why do cats' eyes glow in the dark?",
+                "How fast can cats run?",
+                "Do cats sweat?"
+            ],
+            math: [
+                "What is Graham's number?",
+                "Can you explain infinity to me?",
+                "What is tetration?",
+                "What's the biggest number with a name?",
+                "What is the Mandelbrot set?",
+                "How do imaginary numbers work?",
+                "What is the Fibonacci sequence?",
+                "Can you explain prime numbers?",
+                "What is a googolplex?",
+                "How do fractals work?"
+            ],
+            weird: [
+                "Why do we have fingerprints?",
+                "Can trees communicate with each other?",
+                "Why do some people have different colored eyes?",
+                "Are there animals that can live forever?",
+                "Why does time seem to go faster as you get older?",
+                "How do optical illusions trick our brains?",
+                "Do other animals dream like humans do?",
+                "Why can't we tickle ourselves?",
+                "Why do we get brain freeze when eating cold things?",
+                "Can plants feel pain?"
+            ],
+            weather: [
+                "How do tornadoes form?",
+                "Why does lightning make thunder?",
+                "How do hurricanes get their names?",
+                "Why does it rain?",
+                "What makes a rainbow appear?",
+                "How do snowflakes form?",
+                "What causes fog?",
+                "Why is the sky blue?",
+                "What is the coldest place on Earth?",
+                "How do meteorologists predict the weather?"
+            ],
+            history: [
+                "Who invented video games?",
+                "What was the weirdest fashion trend in history?",
+                "When was the first computer invented?",
+                "Who were the Vikings?",
+                "What was the most surprising ancient technology?",
+                "Were there female pirates?",
+                "What did ancient Egyptian kids play with?",
+                "Who invented pizza?",
+                "What was school like 100 years ago?",
+                "What's the oldest city in the world?"
+            ],
+            computers: [
+                "How do computers think?",
+                "How does the internet work?",
+                "What is coding?",
+                "How do video games work?",
+                "What is artificial intelligence?",
+                "How do computers store information?",
+                "Who invented the first computer?",
+                "What is a computer virus?",
+                "How fast can computers calculate?",
+                "How does a computer chip work?"
+            ],
+            animals: [
+                "How do animals communicate?",
+                "Why do cats purr?",
+                "How smart are dolphins?",
+                "Why do snakes shed their skin?",
+                "How do birds know where to migrate?",
+                "Why do dogs wag their tails?",
+                "How do chameleons change color?",
+                "Do animals have feelings?",
+                "How do bees make honey?",
+                "Why do some animals glow in the dark?"
+            ]
+        };
+        
+        // Initialize question history from localStorage
+        let questionHistory = [];
+        const MAX_HISTORY = 10;
+        
+        function loadQuestionHistory() {
+            const saved = localStorage.getItem('questionHistory');
+            if (saved) {
+                questionHistory = JSON.parse(saved);
+                renderQuestionHistory();
+            }
+        }
+        
+        function saveQuestionHistory() {
+            localStorage.setItem('questionHistory', JSON.stringify(questionHistory));
+        }
+        
+        function formatTimeAgo(timestamp) {
+            const now = new Date();
+            const questionTime = new Date(timestamp);
+            const diffInSeconds = Math.floor((now - questionTime) / 1000);
+            
+            if (diffInSeconds < 60) {
+                return 'just now';
+            } else if (diffInSeconds < 3600) {
+                const minutes = Math.floor(diffInSeconds / 60);
+                return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+            } else if (diffInSeconds < 86400) {
+                const hours = Math.floor(diffInSeconds / 3600);
+                return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+            } else {
+                const days = Math.floor(diffInSeconds / 86400);
+                return `${days} day${days > 1 ? 's' : ''} ago`;
+            }
+        }
+        
+        function renderQuestionHistory() {
+            if (questionHistory.length === 0) {
+                questionHistoryList.innerHTML = '<div class="no-questions">No questions yet. Ask something!</div>';
+                return;
+            }
+            
+            questionHistoryList.innerHTML = '';
+            questionHistory.forEach((item, index) => {
+                const questionItem = document.createElement('div');
+                questionItem.className = 'question-history-item';
+                questionItem.innerHTML = `
+                    <div class="question-text">${item.question}</div>
+                    <div class="question-time">${formatTimeAgo(item.timestamp)}</div>
+                `;
+                
+                questionItem.addEventListener('click', () => {
+                    questionInput.value = item.question;
+                    if (item.answer) {
+                        // If we already have the answer, just display it
+                        showSavedAnswer(item.answer);
+                    } else {
+                        // Otherwise ask the question again
+                        askQuestion();
+                    }
+                });
+                
+                questionHistoryList.appendChild(questionItem);
+            });
+        }
+        
+        function updateTimeDisplays() {
+            const timeElements = questionHistoryList.querySelectorAll('.question-time');
+            questionHistory.forEach((item, index) => {
+                if (timeElements[index]) {
+                    timeElements[index].textContent = formatTimeAgo(item.timestamp);
+                }
+            });
+        }
+        
+        // Update time displays every minute
+        setInterval(updateTimeDisplays, 60000);
+        
+        function showSavedAnswer(answer) {
+            answerBox.classList.add('visible');
+            loading.style.display = 'none';
+            answerContent.style.display = 'block';
+            answerContent.innerHTML = marked.parse(answer);
+        }
+        
+        // Function to get a random question from a topic
+        function getRandomQuestion(topic) {
+            const questions = TOPIC_QUESTIONS[topic];
+            const randomIndex = Math.floor(Math.random() * questions.length);
+            return questions[randomIndex];
+        }
 
         async function getAnswer(question) {
             const API_ENDPOINT = '/.netlify/functions/ask';
@@ -423,6 +798,150 @@
             }
         }
 
+        // Add favorite button to answer box
+        function addFavoriteButton() {
+            // Check if button already exists
+            if (document.getElementById('favoriteButton')) return;
+            
+            // Create favorite button
+            const favoriteButton = document.createElement('button');
+            favoriteButton.id = 'favoriteButton';
+            favoriteButton.className = 'favorite-button';
+            favoriteButton.innerHTML = '☆ Add to Favorites';
+            favoriteButton.style.cssText = `
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                background-color: #FFE66D;
+                color: #2C3E50;
+                border: 2px solid #2C3E50;
+                border-radius: 8px;
+                padding: 5px 12px;
+                font-family: 'Rubik', sans-serif;
+                font-weight: 700;
+                font-size: 0.9em;
+                cursor: pointer;
+                transition: all 0.2s ease;
+            `;
+            
+            favoriteButton.addEventListener('mouseover', () => {
+                favoriteButton.style.transform = 'translateY(-2px)';
+                favoriteButton.style.boxShadow = '2px 2px 0 #2C3E50';
+            });
+            
+            favoriteButton.addEventListener('mouseout', () => {
+                favoriteButton.style.transform = 'translateY(0)';
+                favoriteButton.style.boxShadow = 'none';
+            });
+            
+            // Add the button to the answer box
+            const answerBox = document.getElementById('answerBox');
+            answerBox.appendChild(favoriteButton);
+            
+            // Handle favorite toggle
+            favoriteButton.addEventListener('click', toggleFavorite);
+        }
+
+        // Toggle favorite status of current question/answer
+        function toggleFavorite() {
+            const favoriteButton = document.getElementById('favoriteButton');
+            const question = document.getElementById('questionInput').value;
+            const answer = document.getElementById('answerContent').innerHTML;
+            
+            // Get current favorites from localStorage
+            let favorites = [];
+            const saved = localStorage.getItem('favorites');
+            if (saved) {
+                favorites = JSON.parse(saved);
+            }
+            
+            // Check if this question is already favorited
+            const existingIndex = favorites.findIndex(f => f.question === question);
+            
+            if (existingIndex > -1) {
+                // Remove from favorites
+                favorites.splice(existingIndex, 1);
+                favoriteButton.innerHTML = '☆ Add to Favorites';
+                favoriteButton.style.backgroundColor = '#FFE66D';
+            } else {
+                // Add to favorites
+                const newFavorite = {
+                    id: generateId(),
+                    question: question,
+                    answer: answer,
+                    timestamp: new Date().toISOString(),
+                    tags: [],
+                    notes: ''
+                };
+                
+                favorites.unshift(newFavorite);
+                favoriteButton.innerHTML = '★ Favorited!';
+                favoriteButton.style.backgroundColor = '#FF6B6B';
+                favoriteButton.style.color = 'white';
+                
+                // Show success message
+                showSuccessMessage();
+            }
+            
+            // Save to localStorage
+            localStorage.setItem('favorites', JSON.stringify(favorites));
+        }
+
+        // Generate unique ID for favorites
+        function generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
+        }
+
+        // Show success message when added to favorites
+        function showSuccessMessage() {
+            // Check if message already exists
+            if (document.getElementById('favoriteMessage')) return;
+            
+            const message = document.createElement('div');
+            message.id = 'favoriteMessage';
+            message.innerHTML = '🎉 Added to favorites!';
+            message.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background-color: #4ECDC4;
+                color: white;
+                padding: 10px 20px;
+                border-radius: 10px;
+                border: 3px solid #2C3E50;
+                font-family: 'Rubik', sans-serif;
+                font-weight: 700;
+                box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.1);
+                z-index: 1000;
+                transition: all 0.3s ease;
+                animation: slideIn 0.3s forwards;
+            `;
+            
+            document.body.appendChild(message);
+            
+            // Define the animation
+            const style = document.createElement('style');
+            style.innerHTML = `
+                @keyframes slideIn {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+                @keyframes slideOut {
+                    from { transform: translateX(0); opacity: 1; }
+                    to { transform: translateX(100%); opacity: 0; }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                message.style.animation = 'slideOut 0.3s forwards';
+                setTimeout(() => {
+                    document.body.removeChild(message);
+                }, 300);
+            }, 3000);
+        }
+
         async function askQuestion() {
             const question = questionInput.value.trim();
             if (!question) return;
@@ -436,11 +955,37 @@
             try {
                 const answer = await getAnswer(question);
                 console.log('Received answer:', answer);
+                
+                // Add to question history
+                const newQuestion = {
+                    question: question,
+                    answer: answer,
+                    timestamp: new Date().toISOString()
+                };
+                
+                // Add to the beginning of the array
+                questionHistory.unshift(newQuestion);
+                
+                // Maintain maximum history size
+                if (questionHistory.length > MAX_HISTORY) {
+                    questionHistory = questionHistory.slice(0, MAX_HISTORY);
+                }
+                
+                saveQuestionHistory();
+                renderQuestionHistory();
+                
+                // Display answer
                 loading.style.display = 'none';
                 answerContent.style.display = 'block';
                 
                 // Convert markdown to HTML
                 answerContent.innerHTML = marked.parse(answer);
+                
+                // Add favorite button to answer
+                addFavoriteButton();
+                
+                // Update favorite button state
+                updateFavoriteButtonState(question);
             } catch (error) {
                 console.error('Error in askQuestion:', error);
                 loading.style.display = 'none';
@@ -451,6 +996,78 @@
             }
         }
 
+        // Update favorite button state
+        function updateFavoriteButtonState(question) {
+            const favoriteButton = document.getElementById('favoriteButton');
+            if (!favoriteButton) return;
+            
+            // Get current favorites from localStorage
+            let favorites = [];
+            const saved = localStorage.getItem('favorites');
+            if (saved) {
+                favorites = JSON.parse(saved);
+            }
+            
+            // Check if this question is already favorited
+            const existingIndex = favorites.findIndex(f => f.question === question);
+            
+            if (existingIndex > -1) {
+                favoriteButton.innerHTML = '★ Favorited!';
+                favoriteButton.style.backgroundColor = '#FF6B6B';
+                favoriteButton.style.color = 'white';
+            } else {
+                favoriteButton.innerHTML = '☆ Add to Favorites';
+                favoriteButton.style.backgroundColor = '#FFE66D';
+                favoriteButton.style.color = '#2C3E50';
+            }
+        }
+
+        // Check for favorite parameter in URL
+        function checkForFavoriteParam() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const favoriteId = urlParams.get('favorite');
+            
+            if (favoriteId) {
+                // Get favorites from localStorage
+                const saved = localStorage.getItem('favorites');
+                if (saved) {
+                    const favorites = JSON.parse(saved);
+                    const favorite = favorites.find(f => f.id === favoriteId);
+                    
+                    if (favorite) {
+                        // Set question and display answer
+                        questionInput.value = favorite.question;
+                        
+                        // Show answer immediately
+                        answerBox.classList.add('visible');
+                        loading.style.display = 'none';
+                        answerContent.style.display = 'block';
+                        answerContent.innerHTML = favorite.answer;
+                        
+                        // Add favorite button and update its state
+                        addFavoriteButton();
+                        updateFavoriteButtonState(favorite.question);
+                    }
+                }
+            }
+        }
+
+        // Add navigation tab for favorites
+        function addFavoritesTab() {
+            const navTabs = document.querySelector('.nav-tabs');
+            const favTab = document.createElement('a');
+            favTab.href = 'favorites.html';
+            favTab.className = 'nav-tab';
+            favTab.textContent = '★';
+            navTabs.appendChild(favTab);
+        }
+
+        // Initialize favorites functionality
+        window.addEventListener('DOMContentLoaded', () => {
+            addFavoritesTab();
+            checkForFavoriteParam();
+        });
+
         askButton.addEventListener('click', askQuestion);
         
         questionInput.addEventListener('keypress', (e) => {
@@ -459,12 +1076,32 @@
             }
         });
 
-        suggestionButtons.forEach(button => {
+        topicButtons.forEach(button => {
             button.addEventListener('click', () => {
-                questionInput.value = button.dataset.question;
+                // Get the topic from the data-topic attribute
+                const topic = button.dataset.topic;
+                
+                // Get a random question for this topic
+                const randomQuestion = getRandomQuestion(topic);
+                
+                // Set the question in the input field
+                questionInput.value = randomQuestion;
+                
+                // Trigger the ask function
                 askQuestion();
             });
         });
+        
+        clearHistoryBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to clear your question history?')) {
+                questionHistory = [];
+                saveQuestionHistory();
+                renderQuestionHistory();
+            }
+        });
+        
+        // Initialize on page load
+        loadQuestionHistory();
     </script>
 </body>
 </html>

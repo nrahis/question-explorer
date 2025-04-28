@@ -1,4 +1,8 @@
 // netlify/functions/chat.js
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
+}
+
 exports.handler = async function(event, context) {
     console.log('Chat function called with method:', event.httpMethod);
     

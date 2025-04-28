@@ -10,14 +10,12 @@
         body {
             margin: 0;
             padding: 20px;
-            background-color: #FF6B6B;
             font-family: 'Rubik', sans-serif;
             color: #2C3E50;
             min-height: 100vh;
-            background-image: 
-                radial-gradient(circle at 10% 20%, #FFE66D 15px, transparent 16px),
-                radial-gradient(circle at 90% 80%, #4ECDC4 15px, transparent 16px),
-                radial-gradient(circle at 40% 60%, #FF6B6B 10px, transparent 11px);
+            background-image: url('assets/90s-sprinkles.svg');
+            background-repeat: repeat;
+            background-size: 100px 100px;
         }
         
         .container {
@@ -64,15 +62,20 @@
             text-decoration: none;
             color: #2C3E50;
         }
-        
+
         .nav-tab:hover {
             background-color: #4ECDC4;
-            transform: translateX(-5px);
+            /* Remove the transform that causes detachment */
+            /* transform: translateX(-5px); */
+            box-shadow: -3px 3px 0 #2C3E50;
         }
-        
+
         .nav-tab.active {
             background-color: #FFFFFF;
-            transform: translateX(4px);
+            /* Adjust transform to ensure it stays connected */
+            transform: translateX(1px);
+            z-index: 1;
+            box-shadow: none;
         }
         
         /* Settings bar */
@@ -324,7 +327,7 @@
             border-radius: 10px;
             padding: 10px;
             display: none;
-            grid-template-columns: repeat(9, 1fr);
+            grid-template-columns: repeat(6, 1fr); /* Changed from repeat(9, 1fr) */
             gap: 5px;
             box-shadow: 5px 5px 0 #2C3E50;
             z-index: 1000;
@@ -413,7 +416,7 @@
         /* Color themes */
         /* Hacker */
         .theme-hacker .chat-window {
-            background-color: #000000;
+            background-color: #000000 !important;
         }
         
         .theme-hacker .message.user {
@@ -436,7 +439,7 @@
 
         /* Soft */        
         .theme-soft .chat-window {
-            background-color: #FFF8F3;
+            background-color: #FFF8F3 !important;
         }
         
         .theme-soft .message.user {
@@ -457,7 +460,7 @@
 
         /* Ocean theme */
         .theme-ocean .chat-window {
-            background-color: #ACD2D7;
+            background-color: #ACD2D7 !important;
         }
         .theme-ocean .message.user {
             background-color: #0288D1;
@@ -477,7 +480,7 @@
 
         /* Galaxy theme */
         .theme-galaxy .chat-window {
-            background-color: #1A1A2E;
+            background-color: #1A1A2E !important;
             color: silver;
         }
         .theme-galaxy .message.user {
@@ -499,7 +502,7 @@
 
         /* Neon theme */
         .theme-neon .chat-window {
-            background-color: #000000;
+            background-color: #000000 !important;
         }
         .theme-neon .message.user {
             background-color: #FF00FF;
@@ -517,6 +520,27 @@
 
         .theme-neon .message.bot::after {
             background-color: #00FFFF;
+        }
+
+        /* Make sure theme styles are more specific and properly override */
+        .chat-window.theme-hacker {
+            background-color: #000000 !important; 
+        }
+
+        .chat-window.theme-soft {
+            background-color: #FFF8F3 !important;
+        }
+
+        .chat-window.theme-ocean {
+            background-color: #ACD2D7 !important;
+        }
+
+        .chat-window.theme-galaxy {
+            background-color: #262642 !important;
+        }
+
+        .chat-window.theme-neon {
+            background-color: #380B62 !important;
         }
         
         /* Font styles */
@@ -572,11 +596,14 @@
             }
             
             .nav-tab.active {
-                transform: translateY(4px);
+                transform: translateY(1px);
+                box-shadow: none;
             }
             
             .nav-tab:hover {
-                transform: translateY(-5px);
+                /* Adjust for mobile horizontal tabs */
+                /* transform: translateY(-5px); */
+                box-shadow: 0 -3px 0 #2C3E50;
             }
         }
         
@@ -786,16 +813,23 @@
                 updatePersonaButtons();
             }
             
+            // Initialize chat window with base class
+            chatWindow.className = 'chat-window';
+            
             const savedFont = localStorage.getItem('chatFont');
             if (savedFont) {
                 fontSelector.value = savedFont;
-                chatWindow.className = `chat-window ${savedFont}`;
+                if (savedFont) {
+                    chatWindow.classList.add(savedFont);
+                }
             }
             
             const savedTheme = localStorage.getItem('chatTheme');
             if (savedTheme) {
                 colorSelector.value = savedTheme;
-                chatWindow.classList.add(savedTheme);
+                if (savedTheme) {
+                    chatWindow.classList.add(savedTheme);
+                }
             }
         }
         
@@ -853,18 +887,30 @@
         
         // Handle font selection
         fontSelector.addEventListener('change', () => {
-            const currentTheme = colorSelector.value;
-            chatWindow.className = `chat-window ${fontSelector.value} ${currentTheme}`;
+            // First remove all font classes
+            chatWindow.classList.remove('font-mono', 'font-pixel', 'font-retro', 'font-comic', 'font-fredoka', 'font-superhero', 'font-scifi');
+            
+            // Then add the selected font if one is selected
+            if (fontSelector.value) {
+                chatWindow.classList.add(fontSelector.value);
+            }
+            
             saveChatHistory();
         });
         
         // Handle color theme selection
         colorSelector.addEventListener('change', () => {
-            const currentFont = fontSelector.value;
-            chatWindow.className = `chat-window ${currentFont} ${colorSelector.value}`;
+            // First remove all theme classes
+            chatWindow.classList.remove('theme-hacker', 'theme-soft', 'theme-ocean', 'theme-galaxy', 'theme-neon', 'theme-forest');
+            
+            // Then add the selected theme if one is selected
+            if (colorSelector.value) {
+                chatWindow.classList.add(colorSelector.value);
+            }
+            
             saveChatHistory();
         });
-        
+                
         // Send message
         async function sendMessage() {
             const message = chatInput.value.trim();
@@ -926,6 +972,19 @@
                 sendMessage();
             }
         });
+
+        // Add favorites tab to navigation
+        function addFavoritesTab() {
+            const navTabs = document.querySelector('.nav-tabs');
+            const favTab = document.createElement('a');
+            favTab.href = 'favorites.html';
+            favTab.className = 'nav-tab';
+            favTab.textContent = '★';
+            navTabs.appendChild(favTab);
+        }
+
+        // Initialize favorites functionality
+        addFavoritesTab();
         
         // Initialize
         initializeEmojiPicker();
