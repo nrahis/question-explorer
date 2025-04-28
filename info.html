@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Question Explorer! - Info</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Poppins:wght@400;700;900&family=Rubik:wght@400;700;900&display=swap');
+        
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Rubik', sans-serif;
+            color: #2C3E50;
+            min-height: 100vh;
+            background-image: url('assets/90s-sprinkles.svg');
+            background-repeat: repeat;
+            background-size: 100px 100px;
+        }
+        
+        .info-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #FFFFFF;
+            border: 6px solid #2C3E50;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 10px 10px 0 #2C3E50;
+            position: relative;
+        }
+        
+        .title {
+            font-family: 'Rubik', sans-serif;
+            font-size: 3em;
+            font-weight: 900;
+            color: #2C3E50;
+            text-align: center;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            position: relative;
+        }
+        
+        .info-content {
+            padding: 5px 10px;
+            margin-bottom: 30px;
+            position: relative;
+            line-height: 1.6;
+            font-family: 'Nunito', sans-serif;
+            font-size: 1.1em;
+        }
+        
+        .info-section {
+            margin-bottom: 25px;
+        }
+        
+        .info-section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .section-title {
+            font-family: 'Rubik', sans-serif;
+            font-weight: 700;
+            font-size: 1.5em;
+            color: #2C3E50;
+            margin-bottom: 15px;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: #4ECDC4;
+            border-radius: 3px;
+        }
+        
+        .navigation-buttons {
+            display: flex;
+            justify-content: center;
+        }
+        
+        .nav-button {
+            background-color: #FFE66D;
+            color: #2C3E50;
+            border: 4px solid #2C3E50;
+            border-radius: 12px;
+            padding: 15px 25px;
+            font-family: 'Rubik', sans-serif;
+            font-weight: 700;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .nav-button:hover {
+            transform: translate(-3px, -3px);
+            box-shadow: 5px 5px 0 #2C3E50;
+        }
+        
+        .star {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: #FFE66D;
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+        }
+        
+        .star-1 { top: -10px; left: 20px; transform: rotate(15deg); }
+        .star-2 { top: -10px; right: 40px; transform: rotate(-20deg); }
+        .star-3 { bottom: -10px; left: 50%; transform: rotate(30deg); }
+        
+        .info-emoji {
+            font-size: 2em;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+        
+        .version-tag {
+            display: inline-block;
+            background-color: #FFE66D;
+            color: #2C3E50;
+            font-size: 0.8em;
+            padding: 3px 8px;
+            border-radius: 20px;
+            border: 2px solid #2C3E50;
+            font-weight: 700;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+        
+        @media (max-width: 600px) {
+            .title {
+                font-size: 2.5em;
+            }
+            
+            .nav-button {
+                padding: 12px 20px;
+                font-size: 1em;
+            }
+            
+            .info-container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="info-container">
+        <div class="star star-1"></div>
+        <div class="star star-2"></div>
+        <div class="star star-3"></div>
+        
+        <h1 class="title">About</h1>
+        
+        <div class="info-content">
+            <div class="info-section">
+                <h2 class="section-title">Welcome to Question Explorer! <span class="version-tag">v1.0</span></h2>
+                <p>
+                    <span class="info-emoji">🚀</span>
+                    Question Explorer is a fun, interactive tool designed to help curious minds discover answers to their questions! Whether you're curious about space, math, animals, or just want to chat, Question Explorer is here to help.
+                </p>
+                <p>
+                    This app was created to make learning enjoyable for everyone. Ask any question you can think of, explore different topics, and save your favorite discoveries!
+                </p>
+            </div>
+            
+            <div class="info-section">
+                <h2 class="section-title">How to Use</h2>
+                <p>
+                    <strong>Ask:</strong> Type any question in the search box and click "Ask Away!" to get your answer.
+                </p>
+                <p>
+                    <strong>Chat:</strong> Switch to chat mode to have a conversation instead of just asking individual questions.
+                </p>
+                <p>
+                    <strong>Favorites:</strong> When you find an answer you like, click the star to save it to your favorites.
+                </p>
+            </div>
+        
+        </div>
+        
+        <div class="navigation-buttons">
+            <a href="#" class="nav-button" id="backButton">← Go Back</a>
+        </div>
+    </div>
+
+    <script>
+        // Handle the back button functionality
+        document.getElementById('backButton').addEventListener('click', function(e) {
+            e.preventDefault();
+            // Check if we can go back in history
+            if (document.referrer && document.referrer.includes(window.location.hostname)) {
+                window.history.back();
+            } else {
+                // If not, default to index.html
+                window.location.href = 'index.html';
+            }
+        });
+    </script>
+</body>
+</html>

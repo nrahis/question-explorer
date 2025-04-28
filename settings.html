@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Question Explorer! - Settings</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Poppins:wght@400;700;900&family=Rubik:wght@400;700;900&display=swap');
+        
+        :root {
+            --primary-red: #FF6B6B;
+            --primary-yellow: #FFE66D;
+            --primary-teal: #4ECDC4;
+            --dark-blue: #2C3E50;
+            --light-green: #F7FFF7;
+            --white: #FFFFFF;
+        }
+        
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Rubik', sans-serif;
+            color: var(--dark-blue);
+            min-height: 100vh;
+            background-image: url('assets/90s-sprinkles.svg');
+            background-repeat: repeat;
+            background-size: 100px 100px;
+        }
+        
+        .settings-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: var(--white);
+            border: 6px solid var(--dark-blue);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 10px 10px 0 var(--dark-blue);
+            position: relative;
+        }
+        
+        .title {
+            font-family: 'Rubik', sans-serif;
+            font-size: 3em;
+            font-weight: 900;
+            color: var(--dark-blue);
+            text-align: center;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            position: relative;
+        }
+        
+        .setting-section {
+            background-color: var(--light-green);
+            border: 3px solid var(--dark-blue);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .section-title {
+            font-family: 'Rubik', sans-serif;
+            font-weight: 700;
+            font-size: 1.5em;
+            color: var(--dark-blue);
+            margin-bottom: 15px;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: var(--primary-teal);
+            border-radius: 3px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 700;
+            margin-bottom: 8px;
+            font-size: 1.1em;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            font-size: 1em;
+            border: 3px solid var(--dark-blue);
+            border-radius: 10px;
+            background-color: var(--white);
+            font-family: 'Nunito', sans-serif;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px var(--primary-teal);
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+        }
+        
+        .btn {
+            background-color: var(--primary-teal);
+            color: var(--dark-blue);
+            border: 3px solid var(--dark-blue);
+            border-radius: 10px;
+            padding: 12px 20px;
+            font-family: 'Rubik', sans-serif;
+            font-weight: 700;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 0 var(--dark-blue);
+        }
+        
+        .btn-save {
+            background-color: var(--primary-teal);
+            margin-right: 10px;
+        }
+        
+        .btn-test {
+            background-color: var(--primary-yellow);
+        }
+        
+        .btn-reset {
+            background-color: var(--primary-red);
+            color: var(--white);
+        }
+        
+        .status-message {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 700;
+            display: none;
+        }
+        
+        .status-success {
+            background-color: #D4EDDA;
+            color: #155724;
+            border: 2px solid #C3E6CB;
+        }
+        
+        .status-error {
+            background-color: #F8D7DA;
+            color: #721C24;
+            border: 2px solid #F5C6CB;
+        }
+        
+        .status-warning {
+            background-color: #FFF3CD;
+            color: #856404;
+            border: 2px solid #FFEEBA;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .range-slider {
+            width: 100%;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 10px;
+            border-radius: 5px;
+            background: var(--white);
+            outline: none;
+            border: 2px solid var(--dark-blue);
+        }
+        
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: var(--primary-teal);
+            border: 2px solid var(--dark-blue);
+            cursor: pointer;
+        }
+        
+        .range-slider::-moz-range-thumb {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: var(--primary-teal);
+            border: 2px solid var(--dark-blue);
+            cursor: pointer;
+        }
+        
+        .range-value {
+            display: inline-block;
+            margin-left: 10px;
+            font-weight: bold;
+        }
+        
+        .navigation-buttons {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .nav-button {
+            background-color: var(--primary-yellow);
+            color: var(--dark-blue);
+            border: 4px solid var(--dark-blue);
+            border-radius: 12px;
+            padding: 15px 25px;
+            font-family: 'Rubik', sans-serif;
+            font-weight: 700;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .nav-button:hover {
+            transform: translate(-3px, -3px);
+            box-shadow: 5px 5px 0 var(--dark-blue);
+        }
+        
+        .star {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: var(--primary-yellow);
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+        }
+        
+        .star-1 { top: -10px; left: 20px; transform: rotate(15deg); }
+        .star-2 { top: -10px; right: 40px; transform: rotate(-20deg); }
+        .star-3 { bottom: -10px; left: 50%; transform: rotate(30deg); }
+        
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+            border: 2px solid var(--dark-blue);
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 2px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+            border: 2px solid var(--dark-blue);
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: var(--primary-teal);
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+        
+        .toggle-label {
+            font-family: 'Nunito', sans-serif;
+            font-weight: 600;
+        }
+        
+        .model-not-available {
+            color: #721C24;
+            font-style: italic;
+            margin-top: 5px;
+        }
+        
+        .api-key-input {
+            font-family: monospace;
+            letter-spacing: 1px;
+        }
+        
+        .show-hide-password {
+            cursor: pointer;
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--dark-blue);
+            font-size: 1.2em;
+        }
+        
+        .api-key-wrapper {
+            position: relative;
+        }
+        
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .settings-container {
+                padding: 20px;
+            }
+            
+            .title {
+                font-size: 2.5em;
+            }
+            
+            .nav-button {
+                padding: 12px 20px;
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="settings-container">
+        <div class="star star-1"></div>
+        <div class="star star-2"></div>
+        <div class="star star-3"></div>
+        
+        <h1 class="title">Settings</h1>
+        
+        <div class="setting-section">
+            <h2 class="section-title">AI Provider Settings</h2>
+            <div class="form-group">
+                <label for="provider">Choose AI Provider:</label>
+                <select id="provider" class="form-control">
+                    <option value="gemini">Google Gemini</option>
+                    <option value="openai">OpenAI</option>
+                    <option value="anthropic">Anthropic Claude</option>
+                    <option value="groq">Groq</option>
+                    <option value="deepseek">DeepSeek</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="model">Choose Model:</label>
+                <select id="model" class="form-control">
+                    <!-- This will be populated dynamically -->
+                </select>
+                <div id="modelNotAvailable" class="model-not-available" style="display: none;">
+                    Please enter a valid API key to see available models
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="apiKey">API Key:</label>
+                <div class="api-key-wrapper">
+                    <input type="password" id="apiKey" class="form-control api-key-input" placeholder="Enter your API key here">
+                    <span class="show-hide-password" id="togglePassword">👁️</span>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button id="saveSettingsBtn" class="btn btn-save">Save Settings</button>
+                <button id="testApiBtn" class="btn btn-test">Test Connection</button>
+                <button id="resetSettingsBtn" class="btn btn-reset">Reset to Default</button>
+            </div>
+            
+            <div id="statusMessage" class="status-message"></div>
+        </div>
+        
+        <div class="setting-section">
+            <h2 class="section-title">Advanced Settings</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="temperature">Temperature: <span id="temperatureValue" class="range-value">0.7</span></label>
+                    <input type="range" id="temperature" class="range-slider form-control" min="0" max="1" step="0.1" value="0.7">
+                </div>
+                
+                <div class="form-group">
+                    <label for="maxTokens">Max Tokens: <span id="maxTokensValue" class="range-value">1024</span></label>
+                    <input type="range" id="maxTokens" class="range-slider form-control" min="256" max="4096" step="256" value="1024">
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="topP">Top P: <span id="topPValue" class="range-value">0.8</span></label>
+                    <input type="range" id="topP" class="range-slider form-control" min="0" max="1" step="0.1" value="0.8">
+                </div>
+                
+                <div class="form-group">
+                    <label for="topK">Top K: <span id="topKValue" class="range-value">40</span></label>
+                    <input type="range" id="topK" class="range-slider form-control" min="1" max="100" step="1" value="40">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <div class="toggle-container">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="saveHistory">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span class="toggle-label">Save question history</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="navigation-buttons">
+            <a href="#" class="nav-button" id="backButton">← Go Back</a>
+        </div>
+    </div>
+
+    <script>
+        // Model options for each provider
+        const providerModels = {
+            gemini: [
+                { id: 'gemini-1.0-pro', name: 'Gemini 1.0 Pro' },
+                { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash' },
+                { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro' },
+                { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash' },
+                { id: 'gemini-2.0-pro', name: 'Gemini 2.0 Pro' }
+            ],
+            openai: [
+                { id: 'gpt-3.5-turbo', name: 'GPT-3.5 Turbo' },
+                { id: 'gpt-4', name: 'GPT-4' },
+                { id: 'gpt-4-turbo', name: 'GPT-4 Turbo' }
+            ],
+            anthropic: [
+                { id: 'claude-3-haiku', name: 'Claude 3 Haiku' },
+                { id: 'claude-3-sonnet', name: 'Claude 3 Sonnet' },
+                { id: 'claude-3-opus', name: 'Claude 3 Opus' }
+            ],
+            groq: [
+                { id: 'llama3-8b-8192', name: 'Llama 3 8B' },
+                { id: 'llama3-70b-8192', name: 'Llama 3 70B' },
+                { id: 'mixtral-8x7b-32768', name: 'Mixtral 8x7B' }
+            ],
+            deepseek: [
+                { id: 'deepseek-coder', name: 'DeepSeek Coder' },
+                { id: 'deepseek-chat', name: 'DeepSeek Chat' }
+            ]
+        };
+
+        // Settings structure
+        const defaultSettings = {
+            provider: 'gemini',
+            model: 'gemini-2.0-flash',
+            apiKey: '',
+            temperature: 0.7,
+            maxTokens: 1024,
+            topP: 0.8,
+            topK: 40,
+            saveHistory: true
+        };
+
+        // DOM elements
+        const providerSelect = document.getElementById('provider');
+        const modelSelect = document.getElementById('model');
+        const apiKeyInput = document.getElementById('apiKey');
+        const togglePasswordBtn = document.getElementById('togglePassword');
+        const temperatureSlider = document.getElementById('temperature');
+        const temperatureValue = document.getElementById('temperatureValue');
+        const maxTokensSlider = document.getElementById('maxTokens');
+        const maxTokensValue = document.getElementById('maxTokensValue');
+        const topPSlider = document.getElementById('topP');
+        const topPValue = document.getElementById('topPValue');
+        const topKSlider = document.getElementById('topK');
+        const topKValue = document.getElementById('topKValue');
+        const saveHistoryToggle = document.getElementById('saveHistory');
+        const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+        const testApiBtn = document.getElementById('testApiBtn');
+        const resetSettingsBtn = document.getElementById('resetSettingsBtn');
+        const statusMessage = document.getElementById('statusMessage');
+        const backButton = document.getElementById('backButton');
+        const modelNotAvailable = document.getElementById('modelNotAvailable');
+
+        // Initialize settings
+        function initSettings() {
+            let settings = localStorage.getItem('questionExplorerSettings');
+            
+            if (settings) {
+                settings = JSON.parse(settings);
+            } else {
+                settings = defaultSettings;
+                localStorage.setItem('questionExplorerSettings', JSON.stringify(settings));
+            }
+            
+            // Set initial values
+            providerSelect.value = settings.provider;
+            apiKeyInput.value = settings.apiKey;
+            temperatureSlider.value = settings.temperature;
+            temperatureValue.textContent = settings.temperature;
+            maxTokensSlider.value = settings.maxTokens;
+            maxTokensValue.textContent = settings.maxTokens;
+            topPSlider.value = settings.topP;
+            topPValue.textContent = settings.topP;
+            topKSlider.value = settings.topK;
+            topKValue.textContent = settings.topK;
+            saveHistoryToggle.checked = settings.saveHistory;
+            
+            // Populate model options
+            populateModels(settings.provider);
+            
+            // Set the selected model
+            setTimeout(() => {
+                modelSelect.value = settings.model;
+            }, 100);
+        }
+
+        // Populate model dropdown based on provider
+        function populateModels(provider) {
+            modelSelect.innerHTML = '';
+            
+            if (providerModels[provider]) {
+                providerModels[provider].forEach(model => {
+                    const option = document.createElement('option');
+                    option.value = model.id;
+                    option.textContent = model.name;
+                    modelSelect.appendChild(option);
+                });
+                modelNotAvailable.style.display = 'none';
+            } else {
+                modelNotAvailable.style.display = 'block';
+            }
+        }
+
+        // Save settings to localStorage
+        function saveSettings() {
+            const settings = {
+                provider: providerSelect.value,
+                model: modelSelect.value,
+                apiKey: apiKeyInput.value,
+                temperature: parseFloat(temperatureSlider.value),
+                maxTokens: parseInt(maxTokensSlider.value),
+                topP: parseFloat(topPSlider.value),
+                topK: parseInt(topKSlider.value),
+                saveHistory: saveHistoryToggle.checked
+            };
+            
+            localStorage.setItem('questionExplorerSettings', JSON.stringify(settings));
+            showStatus('Settings saved successfully!', 'success');
+        }
+
+        // Display status message
+        function showStatus(message, type = 'success') {
+            statusMessage.textContent = message;
+            statusMessage.className = 'status-message';
+            
+            switch (type) {
+                case 'success':
+                    statusMessage.classList.add('status-success');
+                    break;
+                case 'error':
+                    statusMessage.classList.add('status-error');
+                    break;
+                case 'warning':
+                    statusMessage.classList.add('status-warning');
+                    break;
+            }
+            
+            statusMessage.style.display = 'block';
+            
+            // Hide status after 5 seconds
+            setTimeout(() => {
+                statusMessage.style.display = 'none';
+            }, 5000);
+        }
+
+        // Test API connection
+        async function testApiConnection() {
+            const provider = providerSelect.value;
+            const model = modelSelect.value;
+            const apiKey = apiKeyInput.value;
+            
+            if (!apiKey) {
+                showStatus('Please enter an API key first', 'error');
+                return;
+            }
+            
+            showStatus('Testing connection...', 'warning');
+            
+            try {
+                // Set button to loading state
+                testApiBtn.textContent = 'Testing...';
+                testApiBtn.disabled = true;
+                
+                // Simple test request
+                const response = await fetch('/.netlify/functions/test-api', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        provider,
+                        model,
+                        apiKey
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showStatus('Connection successful!', 'success');
+                } else {
+                    showStatus(`Connection failed: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error');
+            } finally {
+                // Reset button state
+                testApiBtn.textContent = 'Test Connection';
+                testApiBtn.disabled = false;
+            }
+        }
+
+        // Reset to default settings
+        function resetSettings() {
+            if (confirm('Are you sure you want to reset all settings to default?')) {
+                localStorage.setItem('questionExplorerSettings', JSON.stringify(defaultSettings));
+                initSettings();
+                showStatus('Settings reset to default values', 'success');
+            }
+        }
+
+        // Event Listeners
+        providerSelect.addEventListener('change', () => {
+            populateModels(providerSelect.value);
+            // Select the first model by default
+            if (modelSelect.options.length > 0) {
+                modelSelect.value = modelSelect.options[0].value;
+            }
+        });
+
+        togglePasswordBtn.addEventListener('click', () => {
+            if (apiKeyInput.type === 'password') {
+                apiKeyInput.type = 'text';
+                togglePasswordBtn.textContent = '🔒';
+            } else {
+                apiKeyInput.type = 'password';
+                togglePasswordBtn.textContent = '👁️';
+            }
+        });
+
+        temperatureSlider.addEventListener('input', () => {
+            temperatureValue.textContent = temperatureSlider.value;
+        });
+
+        maxTokensSlider.addEventListener('input', () => {
+            maxTokensValue.textContent = maxTokensSlider.value;
+        });
+
+        topPSlider.addEventListener('input', () => {
+            topPValue.textContent = topPSlider.value;
+        });
+
+        topKSlider.addEventListener('input', () => {
+            topKValue.textContent = topKSlider.value;
+        });
+
+        saveSettingsBtn.addEventListener('click', saveSettings);
+        testApiBtn.addEventListener('click', testApiConnection);
+        resetSettingsBtn.addEventListener('click', resetSettings);
+
+        // Back button handler
+        backButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            // Check if we can go back in history
+            if (document.referrer && document.referrer.includes(window.location.hostname)) {
+                window.history.back();
+            } else {
+                // If not, default to index.html
+                window.location.href = 'index.html';
+            }
+        });
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', initSettings);
+    </script>
+</body>
+</html>

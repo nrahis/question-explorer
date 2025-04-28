@@ -111,6 +111,40 @@
                 box-shadow: 0 -3px 0 #2C3E50;
             }
         }
+
+        /* New side buttons styles */
+        .side-buttons {
+            position: absolute;
+            right: -90px;
+            top: 50px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .side-button {
+            width: 50px;
+            height: 50px;
+            background-color: #4ECDC4;
+            border: 4px solid #2C3E50;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Rubik', sans-serif;
+            font-weight: 700;
+            font-size: 1.5em;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: #2C3E50;
+            box-shadow: 3px 3px 0 #2C3E50;
+        }
+
+        .side-button:hover {
+            background-color: #FFE66D;
+            transform: rotate(15deg);
+        }
         
         .title {
             font-family: 'Rubik', sans-serif;
@@ -491,6 +525,11 @@
             <a href="index.html" class="nav-tab active">ASK</a>
             <a href="chat.html" class="nav-tab">CHAT</a>
         </div>
+
+        <div class="side-buttons">
+            <a href="info.html" class="side-button" title="Information">i</a>
+            <a href="settings.html" class="side-button" title="Settings">⚙</a>
+        </div>
         
         <div class="star star-1"></div>
         <div class="star star-2"></div>
@@ -681,6 +720,25 @@
         // Initialize question history from localStorage
         let questionHistory = [];
         const MAX_HISTORY = 10;
+
+        // Get settings from localStorage
+        function getSettings() {
+            const settings = localStorage.getItem('questionExplorerSettings');
+            if (settings) {
+                return JSON.parse(settings);
+            }
+            // Default settings if none found
+            return {
+                provider: 'gemini',
+                model: 'gemini-2.0-flash',
+                apiKey: '',
+                temperature: 0.7,
+                maxTokens: 1024,
+                topP: 0.8,
+                topK: 40,
+                saveHistory: true
+            };
+        }
         
         function loadQuestionHistory() {
             const saved = localStorage.getItem('questionHistory');
@@ -769,25 +827,32 @@
             return questions[randomIndex];
         }
 
-        async function getAnswer(question) {
+        async function getAnswer(question, settings) {
             const API_ENDPOINT = '/.netlify/functions/ask';
             
             try {
                 const response = await fetch(API_ENDPOINT, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        question: question,
-                        systemPrompt: SYSTEM_PROMPT
-                    })
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    question: question,
+                    systemPrompt: SYSTEM_PROMPT,
+                    provider: settings.provider,
+                    model: settings.model,
+                    apiKey: settings.apiKey,
+                    temperature: settings.temperature,
+                    maxTokens: settings.maxTokens,
+                    topP: settings.topP,
+                    topK: settings.topK
+                })
                 });
 
                 if (!response.ok) {
-                    const errorData = await response.json();
-                    console.error('API Error:', errorData);
-                    throw new Error(errorData.error || `Network response was not ok: ${response.status}`);
+                const errorData = await response.json();
+                console.error('API Error:', errorData);
+                throw new Error(errorData.error || `Network response was not ok: ${response.status}`);
                 }
 
                 const data = await response.json();
@@ -796,6 +861,48 @@
                 console.error('Error details:', error);
                 throw error;
             }
+        }
+
+        // Add a visual indicator for the active provider
+        function addProviderIndicator() {
+            const settings = getSettings();
+            
+            // Check if indicator already exists
+            if (document.getElementById('providerIndicator')) return;
+            
+            // Create provider indicator
+            const indicator = document.createElement('div');
+            indicator.id = 'providerIndicator';
+            indicator.className = 'provider-indicator';
+            
+            // Add provider logo or name
+            let providerName;
+            switch (settings.provider) {
+                case 'gemini': providerName = 'Gemini'; break;
+                case 'openai': providerName = 'OpenAI'; break;
+                case 'anthropic': providerName = 'Claude'; break;
+                case 'groq': providerName = 'Groq'; break;
+                case 'deepseek': providerName = 'DeepSeek'; break;
+                default: providerName = 'AI';
+            }
+            
+            indicator.textContent = `Powered by: ${providerName}`;
+            indicator.style.cssText = `
+                position: fixed;
+                bottom: 10px;
+                left: 10px;
+                background-color: #4ECDC4;
+                color: #2C3E50;
+                padding: 5px 10px;
+                border-radius: 20px;
+                font-family: 'Nunito', sans-serif;
+                font-size: 0.8em;
+                font-weight: 700;
+                border: 2px solid #2C3E50;
+                z-index: 1000;
+            `;
+            
+            document.body.appendChild(indicator);
         }
 
         // Add favorite button to answer box
@@ -953,9 +1060,14 @@
             answerContent.style.display = 'none';
 
             try {
-                const answer = await getAnswer(question);
+                // Get user settings
+                const settings = getSettings();
+                
+                const answer = await getAnswer(question, settings);
                 console.log('Received answer:', answer);
                 
+                // Only save history if enabled in settings
+                if (settings.saveHistory) {
                 // Add to question history
                 const newQuestion = {
                     question: question,
@@ -973,6 +1085,7 @@
                 
                 saveQuestionHistory();
                 renderQuestionHistory();
+                }
                 
                 // Display answer
                 loading.style.display = 'none';
@@ -1066,6 +1179,11 @@
         window.addEventListener('DOMContentLoaded', () => {
             addFavoritesTab();
             checkForFavoriteParam();
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadQuestionHistory();
+            addProviderIndicator();
         });
 
         askButton.addEventListener('click', askQuestion);

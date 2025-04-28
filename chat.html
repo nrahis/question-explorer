@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat Explorer!</title>
+    <title>Question Explorer!</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Poppins:wght@400;700;900&family=Rubik:wght@400;700;900&family=Space+Mono:wght@400;700&family=VT323&family=Press+Start+2P&family=Comic+Neue:wght@400;700&family=Fredoka+One&family=Bangers&family=Orbitron:wght@400;700&display=swap');        
@@ -77,6 +77,40 @@
             z-index: 1;
             box-shadow: none;
         }
+
+        /* New side buttons styles */
+        .side-buttons {
+            position: absolute;
+            right: -90px;
+            top: 50px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .side-button {
+            width: 50px;
+            height: 50px;
+            background-color: #4ECDC4;
+            border: 4px solid #2C3E50;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Rubik', sans-serif;
+            font-weight: 700;
+            font-size: 1.5em;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: #2C3E50;
+            box-shadow: 3px 3px 0 #2C3E50;
+        }
+
+        .side-button:hover {
+            background-color: #FFE66D;
+            transform: rotate(15deg);
+        }
         
         /* Settings bar */
         .settings-bar {
@@ -119,13 +153,23 @@
         /* Title */
         .title {
             font-family: 'Rubik', sans-serif;
-            font-size: 2.5em;
+            font-size: 3em; /* Increased from 2.5em to match */
             font-weight: 900;
             color: #2C3E50;
             text-align: center;
-            margin-bottom: 10px;
+            margin-bottom: 30px; /* Increased from 10px to match */
             text-transform: uppercase;
             position: relative;
+        }
+
+        /* Add the ?! decoration to match Question Explorer */
+        .title::after {
+            content: '💬';
+            position: absolute;
+            color: #FF6B6B;
+            font-size: 0.8em;
+            transform: rotate(15deg);
+            margin-left: 10px;
         }
         
         .persona-selector {
@@ -669,12 +713,17 @@
             <a href="index.html" class="nav-tab">ASK</a>
             <a href="chat.html" class="nav-tab active">CHAT</a>
         </div>
+
+        <div class="side-buttons">
+            <a href="info.html" class="side-button" title="Information">i</a>
+            <a href="settings.html" class="side-button" title="Settings">⚙</a>
+        </div>
         
         <div class="star star-1"></div>
         <div class="star star-2"></div>
         <div class="star star-3"></div>
         
-        <h1 class="title">Chat Explorer</h1>
+        <h1 class="title">Chat</h1>
         
         <div class="settings-bar">
             <select class="font-selector" id="fontSelector">

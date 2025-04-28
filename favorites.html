@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Favorites Explorer!</title>
+    <title>Question Explorer!</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Poppins:wght@400;700;900&family=Rubik:wght@400;700;900&display=swap');
@@ -74,6 +74,40 @@
             transform: translateX(1px);
             z-index: 1;
             box-shadow: none;
+        }
+
+        /* New side buttons styles */
+        .side-buttons {
+            position: absolute;
+            right: -90px;
+            top: 50px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .side-button {
+            width: 50px;
+            height: 50px;
+            background-color: #4ECDC4;
+            border: 4px solid #2C3E50;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Rubik', sans-serif;
+            font-weight: 700;
+            font-size: 1.5em;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: #2C3E50;
+            box-shadow: 3px 3px 0 #2C3E50;
+        }
+
+        .side-button:hover {
+            background-color: #FFE66D;
+            transform: rotate(15deg);
         }
         
         /* Title */
@@ -234,6 +268,7 @@
             flex-direction: column;
             gap: 20px;
             overflow-y: auto;
+            max-height: calc(100vh - 250px);
         }
         
         /* Card view */
@@ -258,10 +293,9 @@
         }
         
         .favorite-card:hover {
-            transform: translateY(-3px); /* Reduced from -5px */
-            box-shadow: 5px 10px 0 rgba(0, 0, 0, 0.1);
-            /* Add margin to prevent cutoff */
-            margin-top: 3px;
+            transform: none;
+            box-shadow: 3px 5px 0 rgba(0, 0, 0, 0.1);
+            margin-top: 0;
         }
         
         .favorite-card-color-top {
@@ -394,8 +428,9 @@
         }
         
         .favorite-list-item:hover {
-            transform: translateX(5px);
-            box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.1);
+            transform: none;
+            box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.1);
+            margin-right: 0;
         }
         
         .favorite-list-color {
@@ -668,12 +703,17 @@
             <a href="chat.html" class="nav-tab">CHAT</a>
             <a href="favorites.html" class="nav-tab active">★</a>
         </div>
+
+        <div class="side-buttons">
+            <a href="info.html" class="side-button" title="Information">i</a>
+            <a href="settings.html" class="side-button" title="Settings">⚙</a>
+        </div>
         
         <div class="star star-1"></div>
         <div class="star star-2"></div>
         <div class="star star-3"></div>
         
-        <h1 class="title">Favorites Explorer</h1>
+        <h1 class="title">Favorites</h1>
         
         <div class="control-bar">
             <div class="search-container">
