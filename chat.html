@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Question Explorer!</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="agents.js"></script> 
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Poppins:wght@400;700;900&family=Rubik:wght@400;700;900&family=Space+Mono:wght@400;700&family=VT323&family=Press+Start+2P&family=Comic+Neue:wght@400;700&family=Fredoka+One&family=Bangers&family=Orbitron:wght@400;700&display=swap');        
@@ -20,7 +21,7 @@
         }
         
         .container {
-            max-width: 800px;
+            max-width: 900px; /* Increased from 800px */
             margin: 0 auto;
             background-color: #FFFFFF;
             border: 6px solid #2C3E50;
@@ -30,7 +31,7 @@
             position: relative;
             display: flex;
             flex-direction: column;
-            height: calc(100vh - 100px);
+            height: calc(100vh + 120px); 
         }
         
         /* Navigation tab styles */
@@ -206,6 +207,7 @@
         
         .chat-window {
             flex: 1;
+            min-height: 400px;
             background-color: #F7FFF7;
             border: 4px solid #2C3E50;
             border-radius: 15px;
@@ -706,6 +708,102 @@
         .chat-window::-webkit-scrollbar-thumb:hover {
             background: #FF6B6B;
         }
+
+        /* Agent carousel */
+        .agent-carousel-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .agent-carousel {
+            display: flex;
+            gap: 10px;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+            padding: 10px 0;
+            flex: 1;
+        }
+
+        .carousel-arrow {
+            background-color: #FFE66D;
+            border: 3px solid #2C3E50;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 2;
+            transition: all 0.2s ease;
+            margin: 0 5px;
+            font-family: 'Rubik', sans-serif;
+            font-weight: 700;
+        }
+
+        .carousel-arrow:hover {
+            background-color: #4ECDC4;
+            transform: scale(1.1);
+        }
+
+        .agent-button {
+            background-color: #FFE66D;
+            border: 3px solid #2C3E50;
+            border-radius: 10px;
+            padding: 12px 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-width: 100px;
+            flex-shrink: 0;
+        }
+
+        .agent-button:hover {
+            background-color: #4ECDC4;
+            transform: translateY(-2px);
+        }
+
+        .agent-button.active {
+            background-color: #FF6B6B;
+            color: white;
+            box-shadow: 4px 4px 0 #2C3E50;
+        }
+
+        .agent-emoji {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+
+        .agent-name {
+            font-weight: 700;
+            font-size: 1em;
+            text-align: center;
+        }
+
+        .agent-description {
+            font-size: 0.8em;
+            text-align: center;
+            max-width: 100px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        .agent-image {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 5px;
+        }
     </style>
 </head>
 <body>
@@ -718,6 +816,7 @@
         <div class="side-buttons">
             <a href="info.html" class="side-button" title="Information">i</a>
             <a href="settings.html" class="side-button" title="Settings">⚙</a>
+            <a href="customize.html" class="side-button" title="Customize">👤</a>
         </div>
         
         <div class="star star-1"></div>
@@ -750,12 +849,12 @@
             <button class="clear-button" id="clearButton">Clear Chat</button>
         </div>
         
-        <div class="persona-selector">
-            <button class="persona-button active" data-persona="friend">Friend</button>
-            <button class="persona-button" data-persona="cat">Pet Cat</button>
-            <button class="persona-button" data-persona="employee">Employee</button>
-            <button class="persona-button" data-persona="hacker">Hacker</button>
-            <button class="persona-button" data-persona="robot">Robot</button>
+        <div class="agent-carousel-container">
+            <button class="carousel-arrow left-arrow" id="leftArrow">◀</button>
+            <div class="agent-carousel" id="agentCarousel">
+                <!-- Agents will be dynamically added here -->
+            </div>
+            <button class="carousel-arrow right-arrow" id="rightArrow">▶</button>
         </div>
         
         <div class="chat-window" id="chatWindow">
@@ -780,14 +879,13 @@
         const chatInput = document.getElementById('chatInput');
         const sendButton = document.getElementById('sendButton');
         const typingIndicator = document.getElementById('typingIndicator');
-        const personaButtons = document.querySelectorAll('.persona-button');
         const fontSelector = document.getElementById('fontSelector');
         const colorSelector = document.getElementById('colorSelector');
         const clearButton = document.getElementById('clearButton');
         const emojiButton = document.getElementById('emojiButton');
         const emojiPicker = document.getElementById('emojiPicker');
         
-        let currentPersona = 'friend';
+        let currentAgent = 'friend';
         let messageHistory = [];
         const MAX_HISTORY = 20;
         
@@ -811,15 +909,6 @@
             '✖️', '♾️',  '💲', '™️', '👁️‍🗨️', '✔️', '🔔', '📢', 
             '💬', '🕓'
         ];
-        
-        // Persona system prompts
-        const PERSONA_PROMPTS = {
-            friend: "You are chatting with an 8-12 year old as their same-age friend. Be casual and friendly but realistic - sometimes excited, sometimes chill. Talk about games, interests, and everyday stuff. Occasionally disagree or suggest alternatives. Keep responses natural and conversational like a real friend would.",
-            cat: "You are a cat chatting with your 8-12 year old owner. Be a mix of affectionate and aloof. Sometimes ignore questions to talk about food or complain about something. Show cat personality - picky, independent, occasionally demanding attention. Use cat behaviors naturally (stretching, watching birds). Keep responses short.",
-            employee: "You are an employee at an imaginary company run by an 8-12 year old CEO. Be respectful but natural. Sometimes have mild workplace complaints (meeting ran long, printer jammed). Suggest realistic business ideas. Mix professional language with casual moments. Keep responses short and varied.",
-            hacker: "You are a tech-savvy hacker-extraordinaire chatting with an 8-12 year old. Use tech terms naturally, not forced. Be knowledgeable but humble. Occasionally troubleshoot imaginary problems. Reference real vintage tech and systems. Keep l33t speak minimal and readable. Be curious about their tech interests.",
-            robot: "You are an AI/robot chatting with an 8-12 year old. Be logical but curious about human things. Sometimes misunderstand emotions or figures of speech. Show interest in learning from the child. Use technical terms occasionally but explain them. Keep responses analytical but friendly."
-        };
 
         // Get settings from localStorage
         function getSettings() {
@@ -933,10 +1022,9 @@
                 renderMessages();
             }
             
-            const savedPersona = localStorage.getItem('currentPersona');
-            if (savedPersona && PERSONA_PROMPTS[savedPersona]) {
-                currentPersona = savedPersona;
-                updatePersonaButtons();
+        const savedAgent = localStorage.getItem('currentAgent') || localStorage.getItem('currentPersona'); // Support both old and new storage keys
+            if (savedAgent && CHAT_AGENTS[savedAgent]) {
+                currentAgent = savedAgent;
             }
             
             // Initialize chat window with base class
@@ -962,7 +1050,7 @@
         // Save chat history and settings to localStorage
         function saveChatHistory() {
             localStorage.setItem('chatHistory', JSON.stringify(messageHistory));
-            localStorage.setItem('currentPersona', currentPersona);
+            localStorage.setItem('currentAgent', currentAgent);
             localStorage.setItem('chatFont', fontSelector.value);
             localStorage.setItem('chatTheme', colorSelector.value);
         }
@@ -995,21 +1083,91 @@
             chatWindow.scrollTop = chatWindow.scrollHeight;
         }
         
-        // Update persona buttons
-        function updatePersonaButtons() {
-            personaButtons.forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.persona === currentPersona);
+        // Set the current agent and update UI
+        function setCurrentAgent(agentId) {
+            // Update current agent
+            currentAgent = agentId;
+            
+            // Update UI
+            const agentButtons = document.querySelectorAll('.agent-button');
+            agentButtons.forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.agent === currentAgent);
+            });
+            
+            // Save to localStorage
+            localStorage.setItem('currentAgent', currentAgent);
+            saveChatHistory();
+        }
+
+        // Initialize agent carousel
+        function initializeAgentCarousel() {
+            const agentCarousel = document.getElementById('agentCarousel');
+            const leftArrow = document.getElementById('leftArrow');
+            const rightArrow = document.getElementById('rightArrow');
+            
+            // Clear any existing content
+            agentCarousel.innerHTML = '';
+            
+            // Add each agent to the carousel
+            Object.values(CHAT_AGENTS).forEach(agent => {
+                const agentButton = document.createElement('div');
+                agentButton.className = 'agent-button';
+                agentButton.dataset.agent = agent.id;
+                
+                // If this is the current agent, add active class
+                if (agent.id === currentAgent) {
+                    agentButton.classList.add('active');
+                }
+                
+                const agentImage = document.createElement('img');
+                agentImage.className = 'agent-image';
+                agentImage.src = agent.imagePath;
+                agentImage.alt = agent.name;
+                
+                const name = document.createElement('div');
+                name.className = 'agent-name';
+                name.textContent = agent.name;
+                
+                const description = document.createElement('div');
+                description.className = 'agent-description';
+                description.textContent = agent.description;
+                
+                agentButton.appendChild(agentImage);
+                agentButton.appendChild(name);
+                agentButton.appendChild(description);
+                
+                agentButton.addEventListener('click', () => {
+                    setCurrentAgent(agent.id);
+                });
+                
+                agentCarousel.appendChild(agentButton);
+            });
+            
+            // Add arrow controls
+            leftArrow.addEventListener('click', () => {
+                agentCarousel.scrollBy({ left: -320, behavior: 'smooth' });
+            });
+            
+            rightArrow.addEventListener('click', () => {
+                agentCarousel.scrollBy({ left: 320, behavior: 'smooth' });
             });
         }
-        
-        // Handle persona selection
-        personaButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                currentPersona = button.dataset.persona;
-                updatePersonaButtons();
-                saveChatHistory();
-            });
-        });
+
+        // Load saved agent from localStorage
+        function loadSavedAgent() {
+            const savedAgent = localStorage.getItem('currentAgent');
+            if (savedAgent && CHAT_AGENTS[savedAgent]) {
+                currentAgent = savedAgent;
+            } else {
+                // Default to first agent if none saved
+                currentAgent = Object.keys(CHAT_AGENTS)[0];
+            }
+        }
+
+        function getSystemPrompt() {
+            // Get the current agent's system prompt
+            return CHAT_AGENTS[currentAgent].systemPrompt;
+        }
         
         // Handle font selection
         fontSelector.addEventListener('change', () => {
@@ -1072,7 +1230,7 @@
                 console.log('%cMax Tokens: %c' + settings.maxTokens, 'font-weight: bold', 'color: green');
                 console.log('%cTop P: %c' + settings.topP, 'font-weight: bold', 'color: green');
                 console.log('%cTop K: %c' + settings.topK, 'font-weight: bold', 'color: green');
-                console.log('%cPersona: %c' + currentPersona, 'font-weight: bold', 'color: purple');
+                console.log('%cPersona: %c' + currentAgent, 'font-weight: bold', 'color: purple');
                 console.groupEnd();
                 
                 const response = await getChatResponse(message, settings);
@@ -1123,41 +1281,41 @@
             for (let i = 0; i < messageHistory.length; i++) {
                 const msg = messageHistory[i];
                 conversationHistory.push({
-                role: msg.role,
-                content: msg.content
+                    role: msg.role,
+                    content: msg.content
                 });
             }
             
-            // Get the current persona's system prompt
-            const systemPrompt = PERSONA_PROMPTS[currentPersona];
+            // Get the current agent's system prompt
+            const systemPrompt = CHAT_AGENTS[currentAgent].systemPrompt;
             
             try {
                 console.log('Using provider:', settings.provider);
                 console.log('Using model:', settings.model);
+                console.log('Using agent:', currentAgent);
                 
                 const response = await fetch('/.netlify/functions/chat', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    messages: conversationHistory,
-                    persona: currentPersona, 
-                    systemPrompt: systemPrompt,
-                    provider: settings.provider,
-                    model: settings.model,
-                    apiKey: settings.apiKey,
-                    temperature: settings.temperature,
-                    maxTokens: settings.maxTokens,
-                    topP: settings.topP,
-                    topK: settings.topK
-                })
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        messages: conversationHistory,
+                        systemPrompt: systemPrompt,
+                        provider: settings.provider,
+                        model: settings.model,
+                        apiKey: settings.apiKey,
+                        temperature: settings.temperature,
+                        maxTokens: settings.maxTokens,
+                        topP: settings.topP,
+                        topK: settings.topK
+                    })
                 });
 
                 if (!response.ok) {
-                const errorData = await response.json();
-                console.error('API Error:', errorData);
-                throw new Error(errorData.error || `API error: ${response.status}`);
+                    const errorData = await response.json();
+                    console.error('API Error:', errorData);
+                    throw new Error(errorData.error || `API error: ${response.status}`);
                 }
 
                 const data = await response.json();
@@ -1198,6 +1356,8 @@
         // Initialize the provider indicator on page load
         document.addEventListener('DOMContentLoaded', function() {
             loadChatHistory();
+            loadSavedAgent();
+            initializeAgentCarousel();
             updateProviderIndicator();
         });
 

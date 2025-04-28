@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Question Explorer! - Customize</title>
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Poppins:wght@400;700;900&family=Rubik:wght@400;700;900&display=swap');
+        
+        :root {
+            --primary-red: #FF6B6B;
+            --primary-yellow: #FFE66D;
+            --primary-teal: #4ECDC4;
+            --dark-blue: #2C3E50;
+            --light-green: #F7FFF7;
+            --white: #FFFFFF;
+        }
+        
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Rubik', sans-serif;
+            color: var(--dark-blue);
+            min-height: 100vh;
+            background-image: url('assets/90s-sprinkles.svg');
+            background-repeat: repeat;
+            background-size: 100px 100px;
+        }
+        
+        .customize-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: var(--white);
+            border: 6px solid var(--dark-blue);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 10px 10px 0 var(--dark-blue);
+            position: relative;
+        }
+        
+        .title {
+            font-family: 'Rubik', sans-serif;
+            font-size: 3em;
+            font-weight: 900;
+            color: var(--dark-blue);
+            text-align: center;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            position: relative;
+        }
+        
+        .title::after {
+            content: '!';
+            position: absolute;
+            color: var(--primary-red);
+            font-size: 0.8em;
+            transform: rotate(15deg);
+            margin-left: 10px;
+        }
+        
+        .intro-text {
+            text-align: center;
+            font-size: 1.2em;
+            margin-bottom: 25px;
+            font-family: 'Nunito', sans-serif;
+        }
+        
+        .interest-section {
+            background-color: var(--light-green);
+            border: 3px solid var(--dark-blue);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .section-title {
+            font-family: 'Rubik', sans-serif;
+            font-weight: 700;
+            font-size: 1.5em;
+            color: var(--dark-blue);
+            margin-bottom: 15px;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: var(--primary-teal);
+            border-radius: 3px;
+        }
+        
+        .instructions {
+            margin-bottom: 20px;
+            font-family: 'Nunito', sans-serif;
+        }
+        
+        .selected-count {
+            font-weight: bold;
+            color: var(--primary-red);
+            margin-bottom: 15px;
+        }
+        
+        .interests-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .interest-tag {
+            background-color: var(--primary-yellow);
+            border: 3px solid var(--dark-blue);
+            border-radius: 12px;
+            padding: 15px 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Nunito', sans-serif;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .interest-tag:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 0 var(--dark-blue);
+        }
+        
+        .interest-tag.selected {
+            background-color: var(--primary-teal);
+            transform: translateY(-3px);
+            box-shadow: 0 3px 0 var(--dark-blue);
+        }
+        
+        .interest-tag.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            font-weight: bold;
+            font-size: 1.2em;
+            color: var(--dark-blue);
+        }
+        
+        .interest-tag.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .interest-emoji {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+        
+        .interest-name {
+            font-weight: 700;
+            font-size: 1em;
+            text-align: center;
+        }
+        
+        .category-title {
+            grid-column: 1 / -1;
+            font-family: 'Rubik', sans-serif;
+            font-weight: 700;
+            font-size: 1.2em;
+            color: var(--dark-blue);
+            margin-top: 10px;
+            margin-bottom: 5px;
+        }
+        
+        .category-divider {
+            grid-column: 1 / -1;
+            height: 3px;
+            background-color: var(--primary-teal);
+            margin: 10px 0;
+            border-radius: 3px;
+        }
+        
+        .navigation-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .nav-button {
+            background-color: var(--primary-yellow);
+            color: var(--dark-blue);
+            border: 4px solid var(--dark-blue);
+            border-radius: 12px;
+            padding: 15px 25px;
+            font-family: 'Rubik', sans-serif;
+            font-weight: 700;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .nav-button:hover {
+            transform: translate(-3px, -3px);
+            box-shadow: 5px 5px 0 var(--dark-blue);
+        }
+        
+        .save-button {
+            background-color: var(--primary-teal);
+        }
+        
+        .selected-interests {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: var(--white);
+            border: 3px solid var(--dark-blue);
+            border-radius: 10px;
+        }
+        
+        .selected-interests-title {
+            font-family: 'Rubik', sans-serif;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .selected-interests-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .selected-interest-tag {
+            background-color: var(--primary-teal);
+            border: 2px solid var(--dark-blue);
+            border-radius: 20px;
+            padding: 5px 15px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-family: 'Nunito', sans-serif;
+            font-size: 0.9em;
+        }
+        
+        .remove-interest {
+            margin-left: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--primary-red);
+        }
+        
+        .star {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: var(--primary-yellow);
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+        }
+        
+        .star-1 { top: -10px; left: 20px; transform: rotate(15deg); }
+        .star-2 { top: -10px; right: 40px; transform: rotate(-20deg); }
+        .star-3 { bottom: -10px; left: 50%; transform: rotate(30deg); }
+        
+        /* Custom styles for each section */
+        .stem-section .interest-tag {
+            background-color: #A8E6CF;
+        }
+        
+        .stem-section .interest-tag.selected {
+            background-color: #4ECDC4;
+        }
+        
+        .animals-section .interest-tag {
+            background-color: #FFD3B6;
+        }
+        
+        .animals-section .interest-tag.selected {
+            background-color: #FF8B94;
+        }
+        
+        .culture-section .interest-tag {
+            background-color: #D4A5A5;
+        }
+        
+        .culture-section .interest-tag.selected {
+            background-color: #9A7AA0;
+        }
+        
+        .tech-section .interest-tag {
+            background-color: #98D2EB;
+        }
+        
+        .tech-section .interest-tag.selected {
+            background-color: #5D93E1;
+        }
+        
+        .science-section .interest-tag {
+            background-color: #CDECFF;
+        }
+        
+        .science-section .interest-tag.selected {
+            background-color: #73C2FB;
+        }
+        
+        .misc-section .interest-tag {
+            background-color: #FFE9AE;
+        }
+        
+        .misc-section .interest-tag.selected {
+            background-color: #FFCC33;
+        }
+        
+        @media (max-width: 768px) {
+            .title {
+                font-size: 2.5em;
+            }
+            
+            .interests-container {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+            
+            .nav-button {
+                padding: 12px 20px;
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="customize-container">
+        <div class="star star-1"></div>
+        <div class="star star-2"></div>
+        <div class="star star-3"></div>
+        
+        <h1 class="title">Customize Your Explorer</h1>
+        
+        <div class="intro-text">
+            Choose what interests you the most! We'll use these to show you cool topics and make your answers more relevant.
+        </div>
+        
+        <div class="interest-section">
+            <h2 class="section-title">Your Interests</h2>
+            
+            <div class="instructions">
+                Select up to 8 topics that interest you the most. These will customize your experience!
+            </div>
+            
+            <div class="selected-count" id="selectedCount">
+                Selected: <span id="countDisplay">0</span>/8
+            </div>
+            
+            <!-- STEM Topics -->
+            <div class="interests-container stem-section" id="interestsContainer">
+                <div class="category-title">Science & Math</div>
+                <div class="category-divider"></div>
+                <!-- Topics will be dynamically added here -->
+            </div>
+            
+            <div class="selected-interests">
+                <div class="selected-interests-title">Your Selected Interests:</div>
+                <div class="selected-interests-list" id="selectedInterestsList">
+                    <!-- Selected interests will appear here -->
+                    <div class="empty-selection">None selected yet</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="navigation-buttons">
+            <a href="#" class="nav-button" id="backButton">← Go Back</a>
+            <button class="nav-button save-button" id="saveButton">Save & Apply</button>
+        </div>
+    </div>
+
+    <script src="topics.js"></script>
+    <script>
+        // DOM Elements
+        const interestsContainer = document.getElementById('interestsContainer');
+        const selectedInterestsList = document.getElementById('selectedInterestsList');
+        const countDisplay = document.getElementById('countDisplay');
+        const saveButton = document.getElementById('saveButton');
+        const backButton = document.getElementById('backButton');
+        
+        // Constants
+        const MAX_SELECTIONS = 8;
+        
+        // Group topics by categories
+        const categories = {
+            'Science & Math': ['space', 'math', 'computers', 'weather', 'chemistry', 'physics', 'coding', 'robots'],
+            'Animals & Nature': ['animals', 'cats', 'dogs', 'dinosaurs', 'reptiles', 'ocean', 'insects', 'plants'],
+            'Culture & History': ['history', 'weird', 'mythology', 'art', 'music', 'sports'],
+            'Tech & Gaming': ['videogames', 'internet', 'minecraft', 'gadgets'],
+            'Science & Experiments': ['experiments', 'brain'],
+            'Miscellaneous': ['food', 'colors']
+        };
+        
+        // Track selected interests
+        let selectedInterests = [];
+        
+        // Load saved interests if available
+        function loadSavedInterests() {
+            const saved = localStorage.getItem('userInterests');
+            if (saved) {
+                selectedInterests = JSON.parse(saved);
+                updateSelectedCount();
+                renderSelectedInterests();
+            }
+        }
+        
+        // Save interests to localStorage
+        function saveInterests() {
+            localStorage.setItem('userInterests', JSON.stringify(selectedInterests));
+            
+            // Show a success message
+            const successMessage = document.createElement('div');
+            successMessage.textContent = 'Your interests have been saved!';
+            successMessage.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background-color: #4ECDC4;
+                color: white;
+                padding: 15px 25px;
+                border-radius: 10px;
+                border: 3px solid #2C3E50;
+                font-family: 'Rubik', sans-serif;
+                font-weight: 700;
+                box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.1);
+                z-index: 1000;
+                animation: slideIn 0.3s forwards;
+            `;
+            
+            // Define the animation
+            const style = document.createElement('style');
+            style.innerHTML = `
+                @keyframes slideIn {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            document.body.appendChild(successMessage);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                document.body.removeChild(successMessage);
+            }, 3000);
+            
+            // Go back to previous page after a short delay
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 1000);
+        }
+        
+        // Update the selected count display
+        function updateSelectedCount() {
+            countDisplay.textContent = selectedInterests.length;
+            
+            // Disable options if max is reached
+            const allOptions = document.querySelectorAll('.interest-tag:not(.selected)');
+            if (selectedInterests.length >= MAX_SELECTIONS) {
+                allOptions.forEach(opt => opt.classList.add('disabled'));
+            } else {
+                allOptions.forEach(opt => opt.classList.remove('disabled'));
+            }
+        }
+        
+        // Render the list of selected interests
+        function renderSelectedInterests() {
+            selectedInterestsList.innerHTML = '';
+            
+            if (selectedInterests.length === 0) {
+                const emptyMessage = document.createElement('div');
+                emptyMessage.className = 'empty-selection';
+                emptyMessage.textContent = 'None selected yet';
+                selectedInterestsList.appendChild(emptyMessage);
+                return;
+            }
+            
+            selectedInterests.forEach(interest => {
+                const tag = document.createElement('div');
+                tag.className = 'selected-interest-tag';
+                
+                const emoji = document.createElement('span');
+                emoji.className = 'selected-interest-emoji';
+                emoji.textContent = TOPIC_QUESTIONS[interest].emoji;
+                
+                const name = document.createElement('span');
+                name.className = 'selected-interest-name';
+                name.textContent = TOPIC_QUESTIONS[interest].displayName;
+                
+                const removeBtn = document.createElement('span');
+                removeBtn.className = 'remove-interest';
+                removeBtn.textContent = '×';
+                removeBtn.addEventListener('click', () => {
+                    removeInterest(interest);
+                });
+                
+                tag.appendChild(emoji);
+                tag.appendChild(name);
+                tag.appendChild(removeBtn);
+                
+                selectedInterestsList.appendChild(tag);
+            });
+        }
+        
+        // Remove an interest from selection
+        function removeInterest(interestId) {
+            selectedInterests = selectedInterests.filter(id => id !== interestId);
+            
+            // Update the UI
+            const interestElement = document.querySelector(`.interest-tag[data-id="${interestId}"]`);
+            if (interestElement) {
+                interestElement.classList.remove('selected');
+            }
+            
+            updateSelectedCount();
+            renderSelectedInterests();
+        }
+        
+        // Toggle selection of an interest
+        function toggleInterest(interestId, element) {
+            if (element.classList.contains('disabled')) return;
+            
+            if (selectedInterests.includes(interestId)) {
+                // Deselect
+                selectedInterests = selectedInterests.filter(id => id !== interestId);
+                element.classList.remove('selected');
+            } else {
+                // Select (if under max)
+                if (selectedInterests.length < MAX_SELECTIONS) {
+                    selectedInterests.push(interestId);
+                    element.classList.add('selected');
+                }
+            }
+            
+            updateSelectedCount();
+            renderSelectedInterests();
+        }
+        
+        // Render all available interests
+        function renderInterests() {
+            // Clear existing content
+            interestsContainer.innerHTML = '';
+            
+            // Add each category
+            Object.entries(categories).forEach(([categoryName, topicIds], index) => {
+                if (index > 0) {
+                    // Add category title and divider
+                    const categoryTitle = document.createElement('div');
+                    categoryTitle.className = 'category-title';
+                    categoryTitle.textContent = categoryName;
+                    interestsContainer.appendChild(categoryTitle);
+                    
+                    const divider = document.createElement('div');
+                    divider.className = 'category-divider';
+                    interestsContainer.appendChild(divider);
+                }
+                
+                // Add topics for this category
+                topicIds.forEach(topicId => {
+                    if (TOPIC_QUESTIONS[topicId]) {
+                        const topic = TOPIC_QUESTIONS[topicId];
+                        
+                        const interestTag = document.createElement('div');
+                        interestTag.className = 'interest-tag';
+                        interestTag.dataset.id = topicId;
+                        
+                        // Add selected class if this interest is already selected
+                        if (selectedInterests.includes(topicId)) {
+                            interestTag.classList.add('selected');
+                        }
+                        
+                        // Add disabled class if max selections reached and this isn't selected
+                        if (selectedInterests.length >= MAX_SELECTIONS && !selectedInterests.includes(topicId)) {
+                            interestTag.classList.add('disabled');
+                        }
+                        
+                        const emoji = document.createElement('div');
+                        emoji.className = 'interest-emoji';
+                        emoji.textContent = topic.emoji;
+                        
+                        const name = document.createElement('div');
+                        name.className = 'interest-name';
+                        name.textContent = topic.displayName;
+                        
+                        interestTag.appendChild(emoji);
+                        interestTag.appendChild(name);
+                        
+                        interestTag.addEventListener('click', () => {
+                            toggleInterest(topicId, interestTag);
+                        });
+                        
+                        interestsContainer.appendChild(interestTag);
+                    }
+                });
+            });
+        }
+        
+        // Event listeners
+        saveButton.addEventListener('click', saveInterests);
+        
+        backButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            // Check if we can go back in history
+            if (document.referrer && document.referrer.includes(window.location.hostname)) {
+                window.history.back();
+            } else {
+                // If not, default to index.html
+                window.location.href = 'index.html';
+            }
+        });
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSavedInterests();
+            renderInterests();
+        });
+    </script>
+</body>
+</html>

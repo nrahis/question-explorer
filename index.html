@@ -535,6 +535,7 @@
         <div class="side-buttons">
             <a href="info.html" class="side-button" title="Information">i</a>
             <a href="settings.html" class="side-button" title="Settings">⚙</a>
+            <a href="customize.html" class="side-button" title="Customize">👤</a>
         </div>
         
         <div class="star star-1"></div>
@@ -610,7 +611,7 @@
             </div>
         </div>
     </div>
-
+    <script src="topics.js"></script>
     <script>
         const questionInput = document.getElementById('questionInput');
         const askButton = document.getElementById('askButton');
@@ -620,112 +621,37 @@
         const topicButtons = document.querySelectorAll('.topic-button');
         const questionHistoryList = document.getElementById('questionHistoryList');
         const clearHistoryBtn = document.getElementById('clearHistoryBtn');
-
-        const SYSTEM_PROMPT = `You are answering questions that an 8-12 year old, but very precocious child is asking you. You will be acting as their 'assistant'! Speak in a casual way but don't talk down to them, they're very smart! Use simple language, fun analogies, and examples that would be relatable to a Gen Alpha child. Make complex ideas easy to understand. They may sometimes ask you out of context questions or just random stuff, in those cases play along :) The child is particularly interested in complex math (giant numbers like Graham's number, tetration, stuff like that), technology (coding, computers in general, vintage tech and operating systems), and also has a fondness for snakes, the color red, and cats. Use markdown formatting to make your response more readable - use headers, bold, italics, lists, etc. when appropriate.`;
-
-        // Question collections by topic
-        const TOPIC_QUESTIONS = {
-            space: [
-                "How big is the universe?",
-                "Why is space black?",
-                "How many planets are in our solar system?",
-                "What are black holes?",
-                "How do stars form?",
-                "Can humans live on Mars?",
-                "What is the Milky Way?",
-                "How old is the universe?",
-                "What is the International Space Station?",
-                "Are there other galaxies?"
-            ],
-            cats: [
-                "Why do cats purr?",
-                "How do cats always land on their feet?",
-                "Why do cats knead with their paws?",
-                "How far can cats jump?",
-                "Why do cats have whiskers?",
-                "How many hours do cats sleep each day?",
-                "Can cats see in complete darkness?",
-                "Why do cats' eyes glow in the dark?",
-                "How fast can cats run?",
-                "Do cats sweat?"
-            ],
-            math: [
-                "What is Graham's number?",
-                "Can you explain infinity to me?",
-                "What is tetration?",
-                "What's the biggest number with a name?",
-                "What is the Mandelbrot set?",
-                "How do imaginary numbers work?",
-                "What is the Fibonacci sequence?",
-                "Can you explain prime numbers?",
-                "What is a googolplex?",
-                "How do fractals work?"
-            ],
-            weird: [
-                "Why do we have fingerprints?",
-                "Can trees communicate with each other?",
-                "Why do some people have different colored eyes?",
-                "Are there animals that can live forever?",
-                "Why does time seem to go faster as you get older?",
-                "How do optical illusions trick our brains?",
-                "Do other animals dream like humans do?",
-                "Why can't we tickle ourselves?",
-                "Why do we get brain freeze when eating cold things?",
-                "Can plants feel pain?"
-            ],
-            weather: [
-                "How do tornadoes form?",
-                "Why does lightning make thunder?",
-                "How do hurricanes get their names?",
-                "Why does it rain?",
-                "What makes a rainbow appear?",
-                "How do snowflakes form?",
-                "What causes fog?",
-                "Why is the sky blue?",
-                "What is the coldest place on Earth?",
-                "How do meteorologists predict the weather?"
-            ],
-            history: [
-                "Who invented video games?",
-                "What was the weirdest fashion trend in history?",
-                "When was the first computer invented?",
-                "Who were the Vikings?",
-                "What was the most surprising ancient technology?",
-                "Were there female pirates?",
-                "What did ancient Egyptian kids play with?",
-                "Who invented pizza?",
-                "What was school like 100 years ago?",
-                "What's the oldest city in the world?"
-            ],
-            computers: [
-                "How do computers think?",
-                "How does the internet work?",
-                "What is coding?",
-                "How do video games work?",
-                "What is artificial intelligence?",
-                "How do computers store information?",
-                "Who invented the first computer?",
-                "What is a computer virus?",
-                "How fast can computers calculate?",
-                "How does a computer chip work?"
-            ],
-            animals: [
-                "How do animals communicate?",
-                "Why do cats purr?",
-                "How smart are dolphins?",
-                "Why do snakes shed their skin?",
-                "How do birds know where to migrate?",
-                "Why do dogs wag their tails?",
-                "How do chameleons change color?",
-                "Do animals have feelings?",
-                "How do bees make honey?",
-                "Why do some animals glow in the dark?"
-            ]
-        };
         
         // Initialize question history from localStorage
         let questionHistory = [];
         const MAX_HISTORY = 10;
+
+        function getSystemPrompt() {
+            // Get user interests if available
+            const userInterests = localStorage.getItem('userInterests');
+            let interestsText = "complex math (giant numbers like Graham's number, tetration, stuff like that), technology (coding, computers in general, vintage tech and operating systems), and also has a fondness for snakes, the color red, and cats";
+            
+            if (userInterests) {
+                const interests = JSON.parse(userInterests);
+                if (interests.length > 0) {
+                    // Create a formatted list of interests
+                    const interestNames = interests.map(id => 
+                        TOPIC_QUESTIONS[id].displayName.toLowerCase()
+                    );
+                    
+                    if (interestNames.length === 1) {
+                        interestsText = interestNames[0];
+                    } else if (interestNames.length === 2) {
+                        interestsText = `${interestNames[0]} and ${interestNames[1]}`;
+                    } else {
+                        const lastInterest = interestNames.pop();
+                        interestsText = `${interestNames.join(', ')}, and ${lastInterest}`;
+                    }
+                }
+            }
+            
+            return `You are answering questions that an 8-12 year old, but very precocious child is asking you. You will be acting as their 'assistant'! Speak in a casual way but don't talk down to them, they're very smart! Use simple language, fun analogies, and examples that would be relatable to a Gen Alpha child. Make complex ideas easy to understand. They may sometimes ask you out of context questions or just random stuff, in those cases play along :) The child is particularly interested in ${interestsText}. Use markdown formatting to make your response more readable - use headers, bold, italics, lists, etc. when appropriate.`;
+        }
 
         // Get settings from localStorage
         function getSettings() {
@@ -838,14 +764,70 @@
             answerContent.innerHTML = marked.parse(answer);
         }
         
-        // Function to get a random question from a topic
-        function getRandomQuestion(topic) {
-            const questions = TOPIC_QUESTIONS[topic];
-            const randomIndex = Math.floor(Math.random() * questions.length);
-            return questions[randomIndex];
+        // Updated code to render topic buttons based on user interests
+        function renderTopicButtons() {
+            const topicsGrid = document.querySelector('.topics-grid');
+            topicsGrid.innerHTML = ''; // Clear existing buttons
+            
+            // Get user interests or use defaults
+            let topicIds = ['space', 'cats', 'math', 'weird', 'weather', 'history', 'computers', 'animals'];
+            const userInterests = localStorage.getItem('userInterests');
+            
+            if (userInterests) {
+                const interests = JSON.parse(userInterests);
+                if (interests.length > 0) {
+                    // Use user-selected interests if available
+                    topicIds = interests;
+                }
+            }
+            
+            // Create buttons for each topic
+            topicIds.forEach(topicId => {
+                if (TOPIC_QUESTIONS[topicId]) {
+                    const topic = TOPIC_QUESTIONS[topicId];
+                    
+                    const topicButton = document.createElement('div');
+                    topicButton.className = 'topic-button';
+                    topicButton.dataset.topic = topicId;
+                    
+                    const topicIcon = document.createElement('div');
+                    topicIcon.className = 'topic-icon';
+                    topicIcon.textContent = topic.emoji;
+                    
+                    const topicName = document.createElement('div');
+                    topicName.className = 'topic-name';
+                    topicName.textContent = topic.displayName;
+                    
+                    topicButton.appendChild(topicIcon);
+                    topicButton.appendChild(topicName);
+                    
+                    topicButton.addEventListener('click', () => {
+                        // Get a random question for this topic
+                        const randomQuestion = getRandomQuestion(topicId);
+                        
+                        // Set the question in the input field
+                        questionInput.value = randomQuestion;
+                        
+                        // Trigger the ask function
+                        askQuestion();
+                    });
+                    
+                    topicsGrid.appendChild(topicButton);
+                }
+            });
         }
 
-        async function getAnswer(question, settings) {
+        // Get a random question from a topic
+        function getRandomQuestion(topic) {
+            if (TOPIC_QUESTIONS[topic] && TOPIC_QUESTIONS[topic].questions) {
+                const questions = TOPIC_QUESTIONS[topic].questions;
+                const randomIndex = Math.floor(Math.random() * questions.length);
+                return questions[randomIndex];
+            }
+            return "How do computers work?"; // Fallback question
+        }
+
+        async function getAnswer(question, settings, systemPrompt) {
             const API_ENDPOINT = '/.netlify/functions/ask';
             
             try {
@@ -853,27 +835,27 @@
                 console.log('Using model:', settings.model);
                 
                 const response = await fetch(API_ENDPOINT, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    question: question,
-                    systemPrompt: SYSTEM_PROMPT,
-                    provider: settings.provider,
-                    model: settings.model,
-                    apiKey: settings.apiKey,
-                    temperature: settings.temperature,
-                    maxTokens: settings.maxTokens,
-                    topP: settings.topP,
-                    topK: settings.topK
-                })
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        question: question,
+                        systemPrompt: systemPrompt,
+                        provider: settings.provider,
+                        model: settings.model,
+                        apiKey: settings.apiKey,
+                        temperature: settings.temperature,
+                        maxTokens: settings.maxTokens,
+                        topP: settings.topP,
+                        topK: settings.topK
+                    })
                 });
 
                 if (!response.ok) {
-                const errorData = await response.json();
-                console.error('API Error:', errorData);
-                throw new Error(errorData.error || `Network response was not ok: ${response.status}`);
+                    const errorData = await response.json();
+                    console.error('API Error:', errorData);
+                    throw new Error(errorData.error || `Network response was not ok: ${response.status}`);
                 }
 
                 const data = await response.json();
@@ -882,7 +864,7 @@
                 console.error('Error details:', error);
                 throw error;
             }
-            }
+        }
 
         // Add a visual indicator for the active provider
         function addProviderIndicator() {
@@ -1131,6 +1113,9 @@
                 // Update the provider indicator before making the request
                 updateProviderIndicator();
 
+                // Get the dynamic system prompt
+                const systemPrompt = getSystemPrompt();
+
                 // Log advanced settings to console
                 console.group('Generation Settings');
                 console.log('%cProvider: %c' + settings.provider, 'font-weight: bold', 'color: blue');
@@ -1141,28 +1126,28 @@
                 console.log('%cTop K: %c' + settings.topK, 'font-weight: bold', 'color: green');
                 console.groupEnd();
                 
-                const answer = await getAnswer(question, settings);
+                const answer = await getAnswer(question, settings, systemPrompt);
                 console.log('Received answer:', answer);
                 
                 // Only save history if enabled in settings
                 if (settings.saveHistory) {
-                // Add to question history
-                const newQuestion = {
-                    question: question,
-                    answer: answer,
-                    timestamp: new Date().toISOString()
-                };
-                
-                // Add to the beginning of the array
-                questionHistory.unshift(newQuestion);
-                
-                // Maintain maximum history size
-                if (questionHistory.length > MAX_HISTORY) {
-                    questionHistory = questionHistory.slice(0, MAX_HISTORY);
-                }
-                
-                saveQuestionHistory();
-                renderQuestionHistory();
+                    // Add to question history
+                    const newQuestion = {
+                        question: question,
+                        answer: answer,
+                        timestamp: new Date().toISOString()
+                    };
+                    
+                    // Add to the beginning of the array
+                    questionHistory.unshift(newQuestion);
+                    
+                    // Maintain maximum history size
+                    if (questionHistory.length > MAX_HISTORY) {
+                        questionHistory = questionHistory.slice(0, MAX_HISTORY);
+                    }
+                    
+                    saveQuestionHistory();
+                    renderQuestionHistory();
                 }
                 
                 // Display answer
@@ -1185,7 +1170,7 @@
             } finally {
                 askButton.disabled = false;
             }
-            }
+        }
 
         // Update favorite button state
         function updateFavoriteButtonState(question) {
@@ -1261,16 +1246,17 @@
 
         // Update the page's visual state when it becomes visible
         document.addEventListener('visibilitychange', function() {
-        if (!document.hidden) {
-            // Update provider indicator when returning to the page
-            updateProviderIndicator();
-        }
+            if (!document.hidden) {
+                updateProviderIndicator();
+                renderTopicButtons();
+            }
         });
 
         // Call this on page load
         document.addEventListener('DOMContentLoaded', function() {
-        loadQuestionHistory();
-        updateProviderIndicator();
+            loadQuestionHistory();
+            updateProviderIndicator();
+            renderTopicButtons();
         });
 
         askButton.addEventListener('click', askQuestion);
