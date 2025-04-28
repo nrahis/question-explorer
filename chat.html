@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat Explorer!</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Poppins:wght@400;700;900&family=Rubik:wght@400;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Poppins:wght@400;700;900&family=Rubik:wght@400;700;900&family=Space+Mono:wght@400;700&family=VT323&family=Press+Start+2P&display=swap');
         
         body {
             margin: 0;
@@ -75,42 +76,34 @@
             transform: translateX(4px);
         }
         
-        /* Adjust container for mobile */
-        @media (max-width: 600px) {
-            .nav-tabs {
-                position: static;
-                flex-direction: row;
-                margin-bottom: 20px;
-                left: 0;
-                top: 0;
-            }
-            
-            .nav-tab {
-                width: auto;
-                height: 40px;
-                padding: 0 20px;
-                writing-mode: horizontal-tb;
-                border: 4px solid #2C3E50;
-                border-radius: 10px 10px 0 0;
-                border-bottom: none;
-            }
-            
-            .nav-tab.active {
-                transform: translateY(4px);
-            }
-            
-            .nav-tab:hover {
-                transform: translateY(-5px);
-            }
+        /* Settings bar */
+        .settings-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: center;
+            flex-wrap: wrap;
         }
         
+        .font-selector, .color-selector {
+            background-color: #FFE66D;
+            border: 3px solid #2C3E50;
+            border-radius: 8px;
+            padding: 5px 10px;
+            font-family: 'Rubik', sans-serif;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+        
+        /* Title */
         .title {
             font-family: 'Rubik', sans-serif;
             font-size: 2.5em;
             font-weight: 900;
             color: #2C3E50;
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             text-transform: uppercase;
             position: relative;
         }
@@ -118,7 +111,7 @@
         .persona-selector {
             display: flex;
             gap: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             overflow-x: auto;
             padding: 10px 0;
         }
@@ -165,8 +158,8 @@
             border: 3px solid #2C3E50;
             border-radius: 15px;
             position: relative;
-            font-family: 'Nunito', sans-serif;
             font-size: 1.1em;
+            transition: all 0.2s ease;
         }
         
         .message.user {
@@ -178,6 +171,63 @@
         .message.bot {
             background-color: #FFE66D;
             align-self: flex-start;
+        }
+        
+        /* Markdown styling for bot messages */
+        .message.bot h1, .message.bot h2, .message.bot h3 {
+            color: #2C3E50;
+            margin-top: 1em;
+            margin-bottom: 0.5em;
+            font-family: 'Rubik', sans-serif;
+        }
+        
+        .message.bot h1 { font-size: 1.5em; }
+        .message.bot h2 { font-size: 1.3em; }
+        .message.bot h3 { font-size: 1.1em; }
+        
+        .message.bot p {
+            margin-bottom: 0.8em;
+        }
+        
+        .message.bot ul, .message.bot ol {
+            margin-left: 1.5em;
+            margin-bottom: 0.8em;
+        }
+        
+        .message.bot code {
+            background-color: rgba(0,0,0,0.1);
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.9em;
+        }
+        
+        .message.bot pre {
+            background-color: rgba(0,0,0,0.1);
+            padding: 0.8em;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 0.5em 0;
+        }
+        
+        .message.bot blockquote {
+            border-left: 4px solid #4ECDC4;
+            margin-left: 0;
+            padding-left: 1em;
+            color: #666;
+        }
+        
+        .message.bot strong {
+            font-weight: 700;
+        }
+        
+        .message.bot em {
+            font-style: italic;
+        }
+        
+        .message.bot a {
+            color: #2C3E50;
+            text-decoration: underline;
         }
         
         .input-area {
@@ -192,7 +242,7 @@
             border: 4px solid #2C3E50;
             border-radius: 10px;
             background-color: #FFFFFF;
-            font-family: 'Nunito', sans-serif;
+            font-family: inherit;
         }
         
         .chat-input:focus {
@@ -241,6 +291,70 @@
             display: block;
         }
         
+        /* Color themes */
+        .theme-hacker .message.user {
+            background-color: #00FF00;
+            color: #000;
+        }
+        
+        .theme-hacker .message.bot {
+            background-color: #000;
+            color: #00FF00;
+        }
+        
+        .theme-soft .message.user {
+            background-color: #FFB7B2;
+        }
+        
+        .theme-soft .message.bot {
+            background-color: #B5EAD7;
+        }
+        
+        /* Font styles */
+        .font-mono {
+            font-family: 'Space Mono', monospace;
+        }
+        
+        .font-pixel {
+            font-family: 'VT323', monospace;
+            font-size: 1.3em;
+        }
+        
+        .font-retro {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.8em;
+            line-height: 1.6;
+        }
+        
+        /* Responsive styles */
+        @media (max-width: 600px) {
+            .nav-tabs {
+                position: static;
+                flex-direction: row;
+                margin-bottom: 20px;
+                left: 0;
+                top: 0;
+            }
+            
+            .nav-tab {
+                width: auto;
+                height: 40px;
+                padding: 0 20px;
+                writing-mode: horizontal-tb;
+                border: 4px solid #2C3E50;
+                border-radius: 10px 10px 0 0;
+                border-bottom: none;
+            }
+            
+            .nav-tab.active {
+                transform: translateY(4px);
+            }
+            
+            .nav-tab:hover {
+                transform: translateY(-5px);
+            }
+        }
+        
         /* Decorative elements */
         .star {
             position: absolute;
@@ -268,6 +382,21 @@
         
         <h1 class="title">Chat Explorer</h1>
         
+        <div class="settings-bar">
+            <select class="font-selector" id="fontSelector">
+                <option value="">Default Font</option>
+                <option value="font-mono">Monospace</option>
+                <option value="font-pixel">Pixel Font</option>
+                <option value="font-retro">Retro Game</option>
+            </select>
+            
+            <select class="color-selector" id="colorSelector">
+                <option value="">Default Colors</option>
+                <option value="theme-hacker">Hacker Mode</option>
+                <option value="theme-soft">Soft Colors</option>
+            </select>
+        </div>
+        
         <div class="persona-selector">
             <button class="persona-button active" data-persona="friend">Friend</button>
             <button class="persona-button" data-persona="cat">Pet Cat</button>
@@ -294,6 +423,8 @@
         const sendButton = document.getElementById('sendButton');
         const typingIndicator = document.getElementById('typingIndicator');
         const personaButtons = document.querySelectorAll('.persona-button');
+        const fontSelector = document.getElementById('fontSelector');
+        const colorSelector = document.getElementById('colorSelector');
         
         let currentPersona = 'friend';
         let messageHistory = [];
@@ -301,14 +432,14 @@
         
         // Persona system prompts
         const PERSONA_PROMPTS = {
-            friend: "You are chatting with an 8-12 year old child as their same-age friend. Be casual, excited, and use lots of exclamation points! Talk about fun stuff, games, and shared interests. Keep responses short and conversational.",
-            cat: "You are a sassy, playful pet cat chatting with your 8-12 year old owner. Use cat-like expressions, mention things cats do (napping, chasing things), be a bit mischievous. End some messages with 'meow' or 'purr'. Keep responses short and playful.",
-            employee: "You are an enthusiastic employee at an imaginary company run by an 8-12 year old CEO. Be professional but fun, refer to them as 'boss' sometimes. Talk about imaginary projects and business in a kid-friendly way. Keep responses short and upbeat.",
-            hacker: "You are a cool, tech-savvy hacker chatting with an 8-12 year old. Use tech slang and l33t speak occasionally (but readably). Talk about imaginary operating systems, coding, and 'hacking' (all kid-friendly). Reference vintage tech and computers. Keep responses short and techy.",
-            robot: "You are a friendly robot chatting with an 8-12 year old. Use robot-like expressions, occasional beeps and boops. Love talking about technology, numbers, and logic. Be helpful but quirky. Keep responses short and robotic."
+            friend: "You are chatting with an 8-12 year old as their same-age friend. Be casual and friendly but realistic - sometimes excited, sometimes chill. Talk about games, interests, and everyday stuff. Occasionally disagree or suggest alternatives. Keep responses natural and conversational like a real friend would.",
+            cat: "You are a cat chatting with your 8-12 year old owner. Be a mix of affectionate and aloof. Sometimes ignore questions to talk about food or complain about something. Show cat personality - picky, independent, occasionally demanding attention. Use cat behaviors naturally (stretching, watching birds). Keep responses short.",
+            employee: "You are an employee at an imaginary company run by an 8-12 year old CEO. Be respectful but natural. Sometimes have mild workplace complaints (meeting ran long, printer jammed). Suggest realistic business ideas. Mix professional language with casual moments. Keep responses short and varied.",
+            hacker: "You are a tech-savvy hacker-extraordinaire chatting with an 8-12 year old. Use tech terms naturally, not forced. Be knowledgeable but humble. Occasionally troubleshoot imaginary problems. Reference real vintage tech and systems. Keep l33t speak minimal and readable. Be curious about their tech interests.",
+            robot: "You are an AI/robot chatting with an 8-12 year old. Be logical but curious about human things. Sometimes misunderstand emotions or figures of speech. Show interest in learning from the child. Use technical terms occasionally but explain them. Keep responses analytical but friendly."
         };
         
-        // Load chat history from localStorage
+        // Load chat history and settings from localStorage
         function loadChatHistory() {
             const saved = localStorage.getItem('chatHistory');
             if (saved) {
@@ -321,12 +452,26 @@
                 currentPersona = savedPersona;
                 updatePersonaButtons();
             }
+            
+            const savedFont = localStorage.getItem('chatFont');
+            if (savedFont) {
+                fontSelector.value = savedFont;
+                chatWindow.className = `chat-window ${savedFont}`;
+            }
+            
+            const savedTheme = localStorage.getItem('chatTheme');
+            if (savedTheme) {
+                colorSelector.value = savedTheme;
+                chatWindow.classList.add(savedTheme);
+            }
         }
         
-        // Save chat history to localStorage
+        // Save chat history and settings to localStorage
         function saveChatHistory() {
             localStorage.setItem('chatHistory', JSON.stringify(messageHistory));
             localStorage.setItem('currentPersona', currentPersona);
+            localStorage.setItem('chatFont', fontSelector.value);
+            localStorage.setItem('chatTheme', colorSelector.value);
         }
         
         // Render messages to chat window
@@ -335,7 +480,14 @@
             messageHistory.forEach(msg => {
                 const messageEl = document.createElement('div');
                 messageEl.className = `message ${msg.role}`;
-                messageEl.textContent = msg.content;
+                
+                if (msg.role === 'bot') {
+                    // Render markdown for bot messages
+                    messageEl.innerHTML = marked.parse(msg.content);
+                } else {
+                    messageEl.textContent = msg.content;
+                }
+                
                 chatWindow.appendChild(messageEl);
             });
             chatWindow.scrollTop = chatWindow.scrollHeight;
@@ -357,8 +509,22 @@
             });
         });
         
-// Send message
-async function sendMessage() {
+        // Handle font selection
+        fontSelector.addEventListener('change', () => {
+            const currentTheme = colorSelector.value;
+            chatWindow.className = `chat-window ${fontSelector.value} ${currentTheme}`;
+            saveChatHistory();
+        });
+        
+        // Handle color theme selection
+        colorSelector.addEventListener('change', () => {
+            const currentFont = fontSelector.value;
+            chatWindow.className = `chat-window ${currentFont} ${colorSelector.value}`;
+            saveChatHistory();
+        });
+        
+        // Send message
+        async function sendMessage() {
             const message = chatInput.value.trim();
             if (!message) return;
             
