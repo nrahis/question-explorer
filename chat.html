@@ -814,6 +814,35 @@
             object-fit: cover;
             margin-bottom: 5px;
         }
+
+                /* Add styles for API Key messaging */
+                .api-key-warning h3 {
+            color: #FF6B6B;
+            margin-top: 0;
+        }
+        
+        .welcome-message h3 {
+            color: #2C3E50;
+            margin-top: 0;
+        }
+        
+        .api-key-banner {
+            width: 100%;
+            box-sizing: border-box;
+            animation: slideDown 0.3s ease-out;
+            margin-bottom: 15px;
+        }
+        
+        @keyframes slideDown {
+            from { 
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to { 
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1205,10 +1234,148 @@
             saveChatHistory();
         });
                 
+// Check API key availability on page load and show a hint if needed
+function checkApiKeyOnLoad() {
+            const settings = getSettings();
+            if (!isApiKeyAvailable(settings)) {
+                console.log("No API key found, attempting to show banner and welcome message");
+                
+                // Add welcome message to chat
+                const chatWindow = document.getElementById('chatWindow');
+                if (chatWindow) {
+                    const botMessageEl = document.createElement('div');
+                    botMessageEl.className = 'message bot';
+                    botMessageEl.innerHTML = `
+                        <div class="welcome-message">
+                            <h3>Welcome to Chat!</h3>
+                            <p>To start chatting, you'll need to set up an API key first.</p>
+                            <p>You can get free API keys from services like Google Gemini, OpenAI, Anthropic, or others.</p>
+                            <div style="margin-top: 10px;">
+                                <a href="settings.html" style="display: inline-block; background-color: #4ECDC4; color: #2C3E50; padding: 8px 15px; border-radius: 8px; text-decoration: none; font-weight: bold; border: 2px solid #2C3E50;">Set Up Your API Key</a>
+                            </div>
+                        </div>
+                    `;
+                    chatWindow.appendChild(botMessageEl);
+                    chatWindow.scrollTop = chatWindow.scrollHeight;
+                    console.log("Added welcome message to chat window");
+                }
+                
+                // Use a longer timeout to ensure DOM is fully loaded
+                setTimeout(() => {
+                    // Target the h1.title element which should be more reliable to find
+                    const titleElement = document.querySelector('h1.title');
+                    
+                    if (!titleElement) {
+                        console.error("Could not find title element");
+                        return;
+                    }
+                    
+                    console.log("Found title element, creating banner");
+                    
+                    // Create the banner with a specific ID
+                    const banner = document.createElement('div');
+                    banner.id = 'apiKeyBanner';
+                    banner.className = 'api-key-banner';
+                    banner.style.width = '100%';
+                    banner.style.boxSizing = 'border-box';
+                    banner.style.marginBottom = '15px';
+                    banner.style.animation = 'slideDown 0.3s ease-out';
+                    
+                    banner.innerHTML = `
+                        <div style="position: relative; background-color: #FFE66D; border: 3px solid #2C3E50; border-radius: 10px; padding: 12px 15px; display: flex; align-items: center; justify-content: space-between;">
+                            <div>
+                                <span style="font-weight: bold;">No API Key Found:</span> 
+                                <span>You need to set up an API key to chat.</span>
+                            </div>
+                            <a href="settings.html" style="background-color: #4ECDC4; color: #2C3E50; padding: 5px 15px; border-radius: 8px; text-decoration: none; font-weight: bold; border: 2px solid #2C3E50; white-space: nowrap; margin-left: 10px;">Add API Key</a>
+                            <button class="close-banner" style="background: none; border: none; font-size: 1.2em; cursor: pointer; position: absolute; top: 5px; right: 10px;">×</button>
+                        </div>
+                    `;
+                    
+                    // Insert directly after the title element
+                    titleElement.insertAdjacentElement('afterend', banner);
+                    console.log("Banner inserted after title");
+                    
+                    // Add event listener to close button
+                    const closeButton = banner.querySelector('.close-banner');
+                    if (closeButton) {
+                        closeButton.addEventListener('click', () => {
+                            banner.style.display = 'none';
+                            console.log("Banner closed");
+                        });
+                    }
+                    
+                    // Add slideDown animation keyframes if they don't exist
+                    if (!document.querySelector('#bannerAnimations')) {
+                        const style = document.createElement('style');
+                        style.id = 'bannerAnimations';
+                        style.textContent = `
+                            @keyframes slideDown {
+                                from { transform: translateY(-20px); opacity: 0; }
+                                to { transform: translateY(0); opacity: 1; }
+                            }
+                        `;
+                        document.head.appendChild(style);
+                        console.log("Added animation styles");
+                    }
+                }, 300); // Longer timeout to ensure DOM is ready
+            }
+        }      
+        
+        // Check if any API key is available
+        function isApiKeyAvailable(settings) {
+            // Check if there's a key for the current provider
+            if (settings.apiKey && settings.apiKey.trim() !== '') {
+                return true;
+            }
+            
+            // If we're using the new multi-key format
+            if (settings.apiKeys) {
+                // Check if any provider has a non-empty key
+                for (const provider in settings.apiKeys) {
+                    if (settings.apiKeys[provider] && settings.apiKeys[provider].trim() !== '') {
+                        return true;
+                    }
+                }
+            }
+            
+            return false;
+        }
+
         // Send message
         async function sendMessage() {
             const message = chatInput.value.trim();
             if (!message) return;
+            
+            // Get user settings
+            const settings = getSettings();
+            
+            // Check if API key is available
+            if (!isApiKeyAvailable(settings)) {
+                // Add API key warning message
+                const botMessageEl = document.createElement('div');
+                botMessageEl.className = 'message bot';
+                botMessageEl.innerHTML = `
+                    <div class="api-key-warning">
+                        <h3>No API Key Found</h3>
+                        <p>You need to set up an API key before you can chat.</p>
+                        <p>Please visit <a href="settings.html" style="color: #FF6B6B; font-weight: bold;">Settings</a> to add your API key.</p>
+                        <div style="margin-top: 15px; padding: 10px; background-color: #F7FFF7; border-radius: 8px; border: 2px solid #4ECDC4;">
+                            <strong>Quick Help:</strong>
+                            <ul>
+                                <li>You can get free API keys from Google Gemini, OpenAI, or other providers</li>
+                                <li>Enter your key in the Settings page</li>
+                                <li>Select your preferred AI provider</li>
+                                <li>Click "Save Settings" and return to continue your chat</li>
+                            </ul>
+                            <a href="settings.html" style="display: inline-block; margin-top: 10px; background-color: #4ECDC4; color: #2C3E50; padding: 8px 15px; border-radius: 8px; text-decoration: none; font-weight: bold; border: 2px solid #2C3E50;">Go to Settings</a>
+                        </div>
+                    </div>
+                `;
+                chatWindow.appendChild(botMessageEl);
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+                return;
+            }
             
             sendButton.disabled = true;
             
@@ -1226,9 +1393,6 @@
             typingIndicator.classList.add('visible');
             
             try {
-                // Get user settings
-                const settings = getSettings();
-                
                 // Update provider indicator before making the request
                 updateProviderIndicator();
 

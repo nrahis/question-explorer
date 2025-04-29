@@ -1116,6 +1116,74 @@
             return false;
         }
 
+// Check API key availability on page load and show a hint if needed
+function checkApiKeyOnLoad() {
+            const settings = getSettings();
+            if (!isApiKeyAvailable(settings)) {
+                console.log("No API key found, attempting to show banner");
+                
+                // Use a longer timeout to ensure DOM is fully loaded
+                setTimeout(() => {
+                    // Target the h1.title element which should be more reliable to find
+                    const titleElement = document.querySelector('h1.title');
+                    
+                    if (!titleElement) {
+                        console.error("Could not find title element");
+                        return;
+                    }
+                    
+                    console.log("Found title element, creating banner");
+                    
+                    // Create the banner with a specific ID
+                    const banner = document.createElement('div');
+                    banner.id = 'apiKeyBanner';
+                    banner.className = 'api-key-banner';
+                    banner.style.width = '100%';
+                    banner.style.boxSizing = 'border-box';
+                    banner.style.marginBottom = '20px';
+                    banner.style.animation = 'slideDown 0.3s ease-out';
+                    
+                    banner.innerHTML = `
+                        <div style="position: relative; background-color: #FFE66D; border: 3px solid #2C3E50; border-radius: 10px; padding: 12px 15px; display: flex; align-items: center; justify-content: space-between;">
+                            <div>
+                                <span style="font-weight: bold;">No API Key Found:</span> 
+                                <span>You need to set up an API key to ask questions.</span>
+                            </div>
+                            <a href="settings.html" style="background-color: #4ECDC4; color: #2C3E50; padding: 5px 15px; border-radius: 8px; text-decoration: none; font-weight: bold; border: 2px solid #2C3E50; white-space: nowrap; margin-left: 10px;">Add API Key</a>
+                            <button class="close-banner" style="background: none; border: none; font-size: 1.2em; cursor: pointer; position: absolute; top: 5px; right: 10px;">×</button>
+                        </div>
+                    `;
+                    
+                    // Insert directly after the title element
+                    titleElement.insertAdjacentElement('afterend', banner);
+                    console.log("Banner inserted after title");
+                    
+                    // Add event listener to close button
+                    const closeButton = banner.querySelector('.close-banner');
+                    if (closeButton) {
+                        closeButton.addEventListener('click', () => {
+                            banner.style.display = 'none';
+                            console.log("Banner closed");
+                        });
+                    }
+                    
+                    // Add slideDown animation keyframes if they don't exist
+                    if (!document.querySelector('#bannerAnimations')) {
+                        const style = document.createElement('style');
+                        style.id = 'bannerAnimations';
+                        style.textContent = `
+                            @keyframes slideDown {
+                                from { transform: translateY(-20px); opacity: 0; }
+                                to { transform: translateY(0); opacity: 1; }
+                            }
+                        `;
+                        document.head.appendChild(style);
+                        console.log("Added animation styles");
+                    }
+                }, 300); // Longer timeout to ensure DOM is ready
+            }
+        }
+
         async function askQuestion() {
             const question = questionInput.value.trim();
             if (!question) return;
