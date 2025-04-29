@@ -32,6 +32,7 @@
             display: flex;
             flex-direction: column;
             height: calc(100vh + 120px); 
+            position: relative;
         }
         
         /* Navigation tab styles */
@@ -454,8 +455,17 @@
             padding: 10px;
             color: #666;
             font-style: italic;
+            position: absolute;
+            bottom: 80px; /* Adjust based on your input area height */
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            border: 2px solid #2C3E50;
+            box-shadow: 3px 3px 0 #2C3E50;
+            z-index: 10;
         }
-        
+
         .typing-indicator.visible {
             display: block;
         }
@@ -1222,6 +1232,18 @@
                 // Update provider indicator before making the request
                 updateProviderIndicator();
 
+                // Format the message history properly
+                const formattedMessages = messageHistory.map(msg => ({
+                    role: msg.role === 'bot' ? 'assistant' : 'user',
+                    content: msg.content
+                }));
+                
+                // Add current message
+                formattedMessages.push({
+                    role: 'user',
+                    content: message
+                });
+
                 // Log advanced settings to console
                 console.group('Generation Settings');
                 console.log('%cProvider: %c' + settings.provider, 'font-weight: bold', 'color: blue');
@@ -1233,7 +1255,7 @@
                 console.log('%cPersona: %c' + currentAgent, 'font-weight: bold', 'color: purple');
                 console.groupEnd();
                 
-                const response = await getChatResponse(message, settings);
+                const response = await getChatResponse(message, settings, formattedMessages);
                 
                 // Hide typing indicator
                 typingIndicator.classList.remove('visible');
@@ -1249,15 +1271,15 @@
                 
                 // Add to message history and save if enabled
                 if (settings.saveHistory) {
-                messageHistory.push({ role: 'user', content: message });
-                messageHistory.push({ role: 'bot', content: response });
-                
-                // Trim history if too long
-                if (messageHistory.length > MAX_HISTORY * 2) {
-                    messageHistory = messageHistory.slice(-MAX_HISTORY * 2);
-                }
-                
-                saveChatHistory();
+                    messageHistory.push({ role: 'user', content: message });
+                    messageHistory.push({ role: 'bot', content: response });
+                    
+                    // Trim history if too long
+                    if (messageHistory.length > MAX_HISTORY * 2) {
+                        messageHistory = messageHistory.slice(-MAX_HISTORY * 2);
+                    }
+                    
+                    saveChatHistory();
                 }
             } catch (error) {
                 console.error('Chat error:', error);
@@ -1274,25 +1296,15 @@
             }
         }
 
-        async function getChatResponse(message, settings) {
-            // Format conversation history for the API
-            const conversationHistory = [];
-            
-            for (let i = 0; i < messageHistory.length; i++) {
-                const msg = messageHistory[i];
-                conversationHistory.push({
-                    role: msg.role,
-                    content: msg.content
-                });
-            }
-            
-            // Get the current agent's system prompt
-            const systemPrompt = CHAT_AGENTS[currentAgent].systemPrompt;
-            
+        // Update the getChatResponse function
+        async function getChatResponse(message, settings, formattedMessages) {
             try {
                 console.log('Using provider:', settings.provider);
                 console.log('Using model:', settings.model);
                 console.log('Using agent:', currentAgent);
+                
+                // Get the current agent's system prompt
+                const systemPrompt = CHAT_AGENTS[currentAgent].systemPrompt;
                 
                 const response = await fetch('/.netlify/functions/chat', {
                     method: 'POST',
@@ -1300,7 +1312,7 @@
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        messages: conversationHistory,
+                        messages: formattedMessages,
                         systemPrompt: systemPrompt,
                         provider: settings.provider,
                         model: settings.model,

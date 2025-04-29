@@ -3,6 +3,14 @@ if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config();
 }
 
+// Utility function to log detailed request/response info
+function logApiInfo(provider, request, response) {
+  console.log(`===== ${provider.toUpperCase()} API REQUEST =====`);
+  console.log(JSON.stringify(request, null, 2));
+  console.log(`===== ${provider.toUpperCase()} API RESPONSE =====`);
+  console.log(JSON.stringify(response, null, 2));
+}
+
 exports.handler = async function(event, context) {
   console.log('Chat function called with method:', event.httpMethod);
   
@@ -121,15 +129,64 @@ exports.handler = async function(event, context) {
 async function chatWithGemini(messages, systemPrompt, model, apiKey, temperature, maxTokens, topP, topK) {
   const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
   
-  // Format conversation history for Gemini
-  const conversationHistory = messages.map(msg => {
-    return msg.role === 'user' 
-      ? `User: ${msg.content}`
-      : `Assistant: ${msg.content}`;
-  }).join('\n');
+  // Create content array for Gemini
+  let contents = [];
   
-  // Combine system prompt with conversation history
-  const fullPrompt = `${systemPrompt}\n\n${conversationHistory ? 'Conversation history:\n' + conversationHistory + '\n\n' : ''}Assistant:`;
+  // Check if there are any messages
+  if (messages && messages.length > 0) {
+    // Create a clean conversation array
+    const conversation = [];
+    
+    // Add system prompt as a user instruction at the beginning
+    if (systemPrompt) {
+      conversation.push({
+        role: "user",
+        parts: [{ text: `${systemPrompt}` }]
+      });
+      
+      // Add a placeholder model response to the system prompt
+      conversation.push({
+        role: "model",
+        parts: [{ text: "I'll follow these instructions." }]
+      });
+    }
+    
+    // Format conversation history for Gemini properly
+    for (const msg of messages) {
+      // Map 'bot' to 'model' for Gemini
+      const role = msg.role === 'user' ? 'user' : 'model';
+      conversation.push({
+        role: role,
+        parts: [{ text: msg.content }]
+      });
+    }
+    
+    // For Gemini, we need to make sure the last message is from 'user'
+    // If it's not, we need to handle this case (unlikely in normal chat flow)
+    if (conversation.length > 0 && conversation[conversation.length - 1].role !== 'user') {
+      console.log('Warning: Last message in conversation is not from user. This may cause issues with Gemini API.');
+    }
+    
+    contents = conversation;
+  } else {
+    // If no messages, just use the system prompt as the initial user message
+    contents = [
+      {
+        role: "user",
+        parts: [{ text: systemPrompt || "Hello" }]
+      }
+    ];
+  }
+  
+  console.log('Gemini API request:', JSON.stringify({
+    contents: contents,
+    generationConfig: {
+      temperature: temperature,
+      maxOutputTokens: maxTokens,
+      topP: topP,
+      topK: topK
+    }
+  }, null, 2));
   
   const response = await fetch(GEMINI_API_URL, {
     method: 'POST',
@@ -137,11 +194,7 @@ async function chatWithGemini(messages, systemPrompt, model, apiKey, temperature
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      contents: [{
-        parts: [{
-          text: fullPrompt
-        }]
-      }],
+      contents: contents,
       generationConfig: {
         temperature: temperature,
         maxOutputTokens: maxTokens,
@@ -151,17 +204,56 @@ async function chatWithGemini(messages, systemPrompt, model, apiKey, temperature
     })
   });
 
+  // Handle errors and log detailed information
   if (!response.ok) {
-    const errorData = await response.text();
-    console.error('Gemini API error:', errorData);
-    throw new Error(`Gemini API error: ${response.status}`);
+    let errorText = '';
+    try {
+      const errorData = await response.text();
+      errorText = errorData;
+      console.error('Gemini API error response:', errorData);
+      
+      // Try to parse the error as JSON for more details
+      try {
+        const errorJson = JSON.parse(errorData);
+        console.error('Gemini API error details:', JSON.stringify(errorJson, null, 2));
+      } catch (e) {
+        // If it's not valid JSON, just use the text
+      }
+    } catch (e) {
+      console.error('Could not read error response:', e);
+    }
+    
+    throw new Error(`Gemini API error: ${response.status} - ${errorText.substring(0, 200)}`);
   }
 
   const data = await response.json();
+  console.log('Gemini API success response:', JSON.stringify(data, null, 2));
   
-  if (!data.candidates || !data.candidates[0] || !data.candidates[0].content || !data.candidates[0].content.parts || !data.candidates[0].content.parts[0]) {
-    console.error('Unexpected response structure:', data);
-    throw new Error('Invalid response structure from Gemini API');
+  // More robust error handling for response structure
+  if (!data.candidates || data.candidates.length === 0) {
+    console.error('No candidates in response:', data);
+    throw new Error('No response candidates from Gemini API');
+  }
+  
+  // Handle potential failures in the response
+  if (data.candidates[0].content === undefined || 
+      data.candidates[0].content === null) {
+    console.error('Invalid candidate content:', data.candidates[0]);
+    
+    // Check if there's a finishReason that indicates an error
+    if (data.candidates[0].finishReason && data.candidates[0].finishReason !== 'STOP') {
+      throw new Error(`Gemini API error: ${data.candidates[0].finishReason}`);
+    }
+    
+    throw new Error('Missing content in Gemini API response');
+  }
+  
+  // Extract the text from the response
+  if (!data.candidates[0].content.parts || 
+      data.candidates[0].content.parts.length === 0 ||
+      !data.candidates[0].content.parts[0].text) {
+    console.error('Missing text in response parts:', data.candidates[0].content);
+    throw new Error('Missing text in Gemini API response');
   }
   
   return data.candidates[0].content.parts[0].text;
@@ -179,8 +271,10 @@ async function chatWithOpenAI(messages, systemPrompt, model, apiKey, temperature
   
   // Add conversation history
   messages.forEach(msg => {
+    // Convert 'bot' role to 'assistant' for OpenAI API compatibility
+    const role = msg.role === 'user' ? 'user' : 'assistant';
     formattedMessages.push({
-      role: msg.role,
+      role: role,
       content: msg.content
     });
   });
@@ -223,8 +317,10 @@ async function chatWithAnthropic(messages, systemPrompt, model, apiKey, temperat
   
   // Add conversation history
   messages.forEach(msg => {
+    // Convert 'bot' role to 'assistant' for Anthropic API compatibility
+    const role = msg.role === 'user' ? 'user' : 'assistant';
     formattedMessages.push({
-      role: msg.role,
+      role: role,
       content: msg.content
     });
   });
@@ -274,8 +370,10 @@ async function chatWithGroq(messages, systemPrompt, model, apiKey, temperature, 
   
   // Add conversation history
   messages.forEach(msg => {
+    // Convert 'bot' role to 'assistant' for Groq API compatibility
+    const role = msg.role === 'user' ? 'user' : 'assistant';
     formattedMessages.push({
-      role: msg.role,
+      role: role,
       content: msg.content
     });
   });
@@ -322,8 +420,10 @@ async function chatWithDeepseek(messages, systemPrompt, model, apiKey, temperatu
   
   // Add conversation history
   messages.forEach(msg => {
+    // Convert 'bot' role to 'assistant' for DeepSeek API compatibility
+    const role = msg.role === 'user' ? 'user' : 'assistant';
     formattedMessages.push({
-      role: msg.role,
+      role: role,
       content: msg.content
     });
   });
