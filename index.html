@@ -1096,9 +1096,57 @@
             }, 3000);
         }
 
+        // Check if any API key is available
+        function isApiKeyAvailable(settings) {
+            // Check if there's a key for the current provider
+            if (settings.apiKey && settings.apiKey.trim() !== '') {
+                return true;
+            }
+            
+            // If we're using the new multi-key format
+            if (settings.apiKeys) {
+                // Check if any provider has a non-empty key
+                for (const provider in settings.apiKeys) {
+                    if (settings.apiKeys[provider] && settings.apiKeys[provider].trim() !== '') {
+                        return true;
+                    }
+                }
+            }
+            
+            return false;
+        }
+
         async function askQuestion() {
             const question = questionInput.value.trim();
             if (!question) return;
+
+            // Get user settings
+            const settings = getSettings();
+            
+            // Check if API key is available
+            if (!isApiKeyAvailable(settings)) {
+                answerBox.classList.add('visible');
+                loading.style.display = 'none';
+                answerContent.style.display = 'block';
+                answerContent.innerHTML = `
+                    <div class="error-message">
+                        <h3>No API Key Found</h3>
+                        <p>You need to set up an API key before you can ask questions.</p>
+                        <p>Please visit <a href="settings.html" style="color: #FF6B6B; font-weight: bold;">Settings</a> to add your API key.</p>
+                        <div style="margin-top: 15px; padding: 10px; background-color: #F7FFF7; border-radius: 8px; border: 2px solid #4ECDC4;">
+                            <strong>Quick Help:</strong>
+                            <ul>
+                                <li>You can get free API keys from Google Gemini, OpenAI, or other providers</li>
+                                <li>Enter your key in the Settings page</li>
+                                <li>Select your preferred AI provider</li>
+                                <li>Click "Save Settings" and return to ask your question</li>
+                            </ul>
+                            <a href="settings.html" style="display: inline-block; margin-top: 10px; background-color: #4ECDC4; color: #2C3E50; padding: 10px 15px; border-radius: 8px; text-decoration: none; font-weight: bold; border: 2px solid #2C3E50;">Go to Settings</a>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
 
             askButton.disabled = true;
             
@@ -1107,9 +1155,6 @@
             answerContent.style.display = 'none';
 
             try {
-                // Get user settings
-                const settings = getSettings();
-                
                 // Update the provider indicator before making the request
                 updateProviderIndicator();
 
